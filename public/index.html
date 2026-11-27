@@ -1308,8 +1308,6 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    const DEV_PREVIEW = false;
-
     const I18N = {
       en: {
         openFromTg: "Please open MILKII APP from Telegram.",
@@ -1410,7 +1408,8 @@
         copyNumber: "Copy number",
         copied: "Copied!",
         payRefLabel: "Transaction reference / ID",
-        payRefPlaceholder: "e.g. FT26123ABC or Telebirr ref",
+        payRefPlaceholder: "Enter bank or Telebirr transaction ID",
+        payNotConfigured: "Payment account is not configured yet. Choose another method or select the Free plan.",
         receiptLabel: "Upload receipt screenshot",
         chooseReceipt: "Choose screenshot",
         receiptReady: "Receipt attached",
@@ -1612,7 +1611,8 @@
         copyNumber: "Lakkoofsa garagalchi",
         copied: "Garagalfameera!",
         payRefLabel: "Lakkoofsa nagahee (Reference)",
-        payRefPlaceholder: "fkn. FT26123ABC ykn Telebirr ID",
+        payRefPlaceholder: "Lakkoofsa gorsa kaffaltii baankii ykn Telebirr galchaa",
+        payNotConfigured: "Herregni kaffaltii ammaaf hin qindaa'in. Karaa biraa filadhaa ykn karoora Bilisaa fayyadamaa.",
         receiptLabel: "Suuraa nagahee (Receipt) fe'i",
         chooseReceipt: "Suuraa filadhu",
         receiptReady: "Nagaheen qophaa'eera",
@@ -1814,7 +1814,8 @@
         copyNumber: "ቁጥሩን ቅዳ",
         copied: "ተቀድቷል!",
         payRefLabel: "የግብይት መለያ (Transaction Reference)",
-        payRefPlaceholder: "ምሳሌ፡ FT26123ABC ወይም Telebirr ID",
+        payRefPlaceholder: "የባንክ ወይም የ Telebirr የግብይት መለያ ቁጥር ያስገቡ",
+        payNotConfigured: "የክፍያ አካውንት ገና አልተዘጋጀም። ሌላ ዘዴ ይምረጡ ወይም ነጻውን እቅድ ይጠቀሙ።",
         receiptLabel: "የደረሰኝ ፎቶ (Screenshot) ይጫኑ",
         chooseReceipt: "ፎቶ ይምረጡ",
         receiptReady: "ደረሰኝ ተያይዟል",
@@ -3265,7 +3266,9 @@
         } else if (p.step === 5) {
           const fee = Number(plans[p.plan] || 0);
           const payCfg = (state.config && state.config.payment) || {};
-          const pm = payCfg[p.payMethod] || payCfg.CBE || { label: p.payMethod, number: "-", holder: "-" };
+          const pm = payCfg[p.payMethod] || payCfg.CBE || { label: p.payMethod, number: "", holder: "" };
+          const hasPayAccount = Boolean(pm && pm.number && pm.holder);
+          nextDisabled = !hasPayAccount;
           bodyHtml = `
             <h3 style="margin:0 0 12px;">${esc(t("step5Title"))}</h3>
             <div class="field-group">
@@ -3276,21 +3279,25 @@
               </div>
               ${p.errors.payMethod ? `<div class="field-error">${esc(p.errors.payMethod)}</div>` : ""}
             </div>
-            <div class="pay-box">
-              <div style="font-weight:800;margin-bottom:6px;">${esc(t("payToAccount", { amount: fee }))}</div>
-              <div style="font-size:13px;color:var(--text-muted);">${esc(pm.label)}</div>
-              <div class="pay-account-row">
-                <div>
-                  <div style="font-size:12px;color:var(--text-muted);">${esc(t("accountNumber"))}</div>
-                  <div style="font-size:17px;font-weight:800;">${esc(pm.number)}</div>
-                </div>
-                <button type="button" id="copyPayBtn" class="btn btn-sm">${esc(t("copyNumber"))}</button>
-              </div>
-              <div style="font-size:13px;">
-                <span style="color:var(--text-muted);">${esc(t("accountHolder"))}:</span>
-                <strong>${esc(pm.holder)}</strong>
-              </div>
-            </div>
+            ${
+              hasPayAccount
+                ? `<div class="pay-box">
+                     <div style="font-weight:800;margin-bottom:6px;">${esc(t("payToAccount", { amount: fee }))}</div>
+                     <div style="font-size:13px;color:var(--text-muted);">${esc(pm.label)}</div>
+                     <div class="pay-account-row">
+                       <div>
+                         <div style="font-size:12px;color:var(--text-muted);">${esc(t("accountNumber"))}</div>
+                         <div style="font-size:17px;font-weight:800;">${esc(pm.number)}</div>
+                       </div>
+                       <button type="button" id="copyPayBtn" class="btn btn-sm">${esc(t("copyNumber"))}</button>
+                     </div>
+                     <div style="font-size:13px;">
+                       <span style="color:var(--text-muted);">${esc(t("accountHolder"))}:</span>
+                       <strong>${esc(pm.holder)}</strong>
+                     </div>
+                   </div>`
+                : `<div class="notice-box">⚠️ ${esc(t("payNotConfigured"))}</div>`
+            }
             <div class="field-group">
               <label class="field-label"><span>${esc(t("payRefLabel"))}<span class="req">*</span></span></label>
               <input id="fPayRef" class="input" type="text" maxlength="60" value="${esc(p.payRef)}" placeholder="${esc(t("payRefPlaceholder"))}" />
@@ -3987,8 +3994,12 @@
       function validateStep5() {
         const p = state.post;
         const errors = {};
+        const payCfg = (state.config && state.config.payment) || {};
+        const pm = payCfg[p.payMethod];
         if (p.payMethod !== "CBE" && p.payMethod !== "Telebirr") {
           errors.payMethod = t("payMethodErr");
+        } else if (!pm || !pm.number || !pm.holder) {
+          errors.payMethod = t("payNotConfigured");
         }
         if (p.payRef.trim().length < 3) {
           errors.payRef = t("payRefErr");

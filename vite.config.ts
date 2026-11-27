@@ -2,7 +2,6 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
-import vm from 'vm';
 import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
@@ -12,24 +11,16 @@ export default defineConfig(() => {
       react(),
       tailwindcss(),
       {
-        name: 'milkii-preview-virtual',
+        name: 'milkii-app-html',
         resolveId(id) {
-          if (id === 'virtual:milkii-preview') {
-            return '\0virtual:milkii-preview';
+          if (id === 'virtual:milkii-app') {
+            return '\0virtual:milkii-app';
           }
         },
         load(id) {
-          if (id === '\0virtual:milkii-preview') {
+          if (id === '\0virtual:milkii-app') {
             const html = fs.readFileSync(path.resolve(__dirname, 'public/index.html'), 'utf8');
-            const backendSrc = fs.readFileSync(
-              path.resolve(__dirname, 'functions/api/[[route]].js'),
-              'utf8'
-            );
-            const marker = 'const encoder = new TextEncoder();';
-            const head = backendSrc.split(marker)[0];
-            const sandbox: Record<string, unknown> = {};
-            vm.runInNewContext(`${head}\nthis.__out = { PLANS, LIMITS, DEFAULT_PAYMENT, DEFAULT_LIMITS, REGIONS, CATEGORIES };`, sandbox);
-            return `export const milkiiHtml = ${JSON.stringify(html)};\nexport const milkiiBackendConfig = ${JSON.stringify(sandbox.__out)};`;
+            return `export const milkiiHtml = ${JSON.stringify(html)};`;
           }
         },
       },

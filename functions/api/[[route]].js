@@ -7,13 +7,13 @@ const DEFAULT_PLANS = {
 const DEFAULT_PAYMENT = {
   CBE: {
     label: "Commercial Bank of Ethiopia",
-    number: "1000XXXXXXXXX",
-    holder: "YOUR FULL NAME"
+    number: "",
+    holder: ""
   },
   Telebirr: {
     label: "Telebirr",
-    number: "09XXXXXXXX",
-    holder: "YOUR FULL NAME"
+    number: "",
+    holder: ""
   }
 };
 
@@ -914,13 +914,13 @@ async function getSettings(db) {
   const payment = {
     CBE: {
       label: typeof rawPay?.CBE?.label === "string" && rawPay.CBE.label.trim() ? rawPay.CBE.label.trim() : DEFAULT_PAYMENT.CBE.label,
-      number: typeof rawPay?.CBE?.number === "string" && rawPay.CBE.number.trim() ? rawPay.CBE.number.trim() : DEFAULT_PAYMENT.CBE.number,
-      holder: typeof rawPay?.CBE?.holder === "string" && rawPay.CBE.holder.trim() ? rawPay.CBE.holder.trim() : DEFAULT_PAYMENT.CBE.holder
+      number: typeof rawPay?.CBE?.number === "string" ? rawPay.CBE.number.trim() : "",
+      holder: typeof rawPay?.CBE?.holder === "string" ? rawPay.CBE.holder.trim() : ""
     },
     Telebirr: {
       label: typeof rawPay?.Telebirr?.label === "string" && rawPay.Telebirr.label.trim() ? rawPay.Telebirr.label.trim() : DEFAULT_PAYMENT.Telebirr.label,
-      number: typeof rawPay?.Telebirr?.number === "string" && rawPay.Telebirr.number.trim() ? rawPay.Telebirr.number.trim() : DEFAULT_PAYMENT.Telebirr.number,
-      holder: typeof rawPay?.Telebirr?.holder === "string" && rawPay.Telebirr.holder.trim() ? rawPay.Telebirr.holder.trim() : DEFAULT_PAYMENT.Telebirr.holder
+      number: typeof rawPay?.Telebirr?.number === "string" ? rawPay.Telebirr.number.trim() : "",
+      holder: typeof rawPay?.Telebirr?.holder === "string" ? rawPay.Telebirr.holder.trim() : ""
     }
   };
 
@@ -1581,6 +1581,10 @@ async function handleCreateItem(context, request, env, user) {
     payMethod = typeof pay.method === "string" ? pay.method.trim() : "";
     if (payMethod !== "CBE" && payMethod !== "Telebirr") {
       return err("Please choose CBE or Telebirr for paid plans.");
+    }
+    const pmCfg = settings.payment && settings.payment[payMethod];
+    if (!pmCfg || !pmCfg.number || !pmCfg.holder) {
+      return err(`${payMethod} payment is not configured yet. Please select the Free plan or try another method.`, 400);
     }
     payRef = typeof pay.ref === "string" ? pay.ref.trim() : "";
     if (payRef.length < 3 || payRef.length > 60) {
