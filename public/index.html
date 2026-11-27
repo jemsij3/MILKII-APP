@@ -3083,6 +3083,12 @@
                 })
                 .join("")}
             </div>
+            ${(() => {
+              const failedWithMsg = p.media.find((m) => m.status === "error" && m.errorText);
+              return failedWithMsg
+                ? `<div class="field-error" style="margin-top:10px;">${esc(failedWithMsg.errorText)}</div>`
+                : "";
+            })()}
             ${donePhotos < 1 ? `<div class="field-error" style="margin-top:10px;">${esc(t("errNeedPhoto"))}</div>` : ""}
           `;
         } else if (p.step === 3 && cat) {
@@ -3854,47 +3860,82 @@
       async function startSingleUpload(mediaItem) {
         mediaItem.status = "uploading";
         mediaItem.progress = 0;
+        mediaItem.errorText = "";
         renderApp();
 
         try {
-          const sign = await api("/api/upload-sign", {
-            method: "POST",
-            body: JSON.stringify({ type: mediaItem.type })
-          });
+          const fileName =
+            mediaItem.type === "video" ? mediaItem.file.name || "video.mp4" : "photo.jpg";
+          let uploadedId = "";
 
-          const form = new FormData();
-          form.append("file", mediaItem.file);
-          form.append("api_key", sign.api_key);
-          form.append("timestamp", String(sign.timestamp));
-          form.append("public_id", sign.public_id);
-          form.append("allowed_formats", sign.allowed_formats);
-          form.append("signature", sign.signature);
+          try {
+            const sign = await api("/api/upload-sign", {
+              method: "POST",
+              body: JSON.stringify({ type: mediaItem.type })
+            });
 
-          await new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open(
-              "POST",
-              `https://api.cloudinary.com/v1_1/${encodeURIComponent(sign.cloud_name)}/${mediaItem.type}/upload`
-            );
-            xhr.upload.onprogress = (ev) => {
-              if (ev.lengthComputable) {
-                mediaItem.progress = Math.round((ev.loaded / ev.total) * 100);
-                const el = document.querySelector(`[data-make-cover="${mediaItem.uid}"] .media-progress`);
-                if (el) el.textContent = `${t("uploading")} ${mediaItem.progress}%`;
-              }
-            };
-            xhr.onload = () => {
-              if (xhr.status >= 200 && xhr.status < 300) {
-                resolve();
-              } else {
-                reject(new Error("Upload failed"));
-              }
-            };
-            xhr.onerror = () => reject(new Error("Network error"));
-            xhr.send(form);
-          });
+            const form = new FormData();
+            form.append("file", mediaItem.file, fileName);
+            form.append("api_key", String(sign.api_key || "").trim());
+            form.append("timestamp", String(sign.timestamp));
+            form.append("public_id", sign.public_id);
+            form.append("allowed_formats", sign.allowed_formats);
+            form.append("signature", sign.signature);
 
-          mediaItem.id = sign.public_id;
+            await new Promise((resolve, reject) => {
+              const xhr = new XMLHttpRequest();
+              xhr.open(
+                "POST",
+                `https://api.cloudinary.com/v1_1/${encodeURIComponent(
+                  String(sign.cloud_name || "").trim()
+                )}/${mediaItem.type}/upload`
+              );
+              xhr.upload.onprogress = (ev) => {
+                if (ev.lengthComputable) {
+                  mediaItem.progress = Math.round((ev.loaded / ev.total) * 100);
+                  const el = document.querySelector(`[data-make-cover="${mediaItem.uid}"] .media-progress`);
+                  if (el) el.textContent = `${t("uploading")} ${mediaItem.progress}%`;
+                }
+              };
+              xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                  resolve();
+                } else {
+                  let msg = `Upload failed (${xhr.status})`;
+                  try {
+                    const errJson = JSON.parse(xhr.responseText || "{}");
+                    if (errJson && errJson.error && errJson.error.message) {
+                      msg = errJson.error.message;
+                    }
+                  } catch {}
+                  reject(new Error(msg));
+                }
+              };
+              xhr.onerror = () => {
+                const netErr = new Error("Network error");
+                netErr.isNetwork = true;
+                reject(netErr);
+              };
+              xhr.send(form);
+            });
+
+            uploadedId = sign.public_id;
+          } catch (directErr) {
+            if (directErr && directErr.isNetwork) {
+              const fallbackForm = new FormData();
+              fallbackForm.append("type", mediaItem.type);
+              fallbackForm.append("file", mediaItem.file, fileName);
+              const proxyRes = await api("/api/upload", {
+                method: "POST",
+                body: fallbackForm
+              });
+              uploadedId = proxyRes.id;
+            } else {
+              throw directErr;
+            }
+          }
+
+          mediaItem.id = uploadedId;
           mediaItem.status = "done";
           mediaItem.progress = 100;
         } catch (e) {

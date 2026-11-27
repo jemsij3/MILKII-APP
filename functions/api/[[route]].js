@@ -1,5 +1,13 @@
 const TRANSLATE_MODEL = "@cf/meta/m2m100-1.2b";
-const CHAT_MODEL = "@cf/meta/llama-3.1-8b-instruct"; // the owner may change this one line later
+const CHAT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fast"; // the owner may change this one line later
+const CHAT_FALLBACK_MODELS = [
+  CHAT_MODEL,
+  "@cf/meta/llama-3.2-3b-instruct",
+  "@cf/google/gemma-4-26b-a4b-it",
+  "@cf/qwen/qwen3-30b-a3b-fp8",
+  "@cf/mistralai/mistral-small-3.1-24b-instruct",
+  "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+];
 
 const DEFAULT_PLANS = {
   free: 0,
@@ -1440,6 +1448,14 @@ function encodePublicIdPath(publicId) {
     .join("/");
 }
 
+function getCloudinaryConfig(env) {
+  return {
+    cloudName: String((env && env.CLOUDINARY_CLOUD_NAME) || "").trim(),
+    apiKey: String((env && env.CLOUDINARY_API_KEY) || "").trim(),
+    apiSecret: String((env && env.CLOUDINARY_API_SECRET) || "").trim()
+  };
+}
+
 async function verifyCloudinaryAsset(env, entry, userId) {
   if (!entry || typeof entry !== "object") {
     return { ok: false, error: "Invalid media item." };
@@ -1458,13 +1474,14 @@ async function verifyCloudinaryAsset(env, entry, userId) {
     return { ok: false, error: "Media ID does not belong to you." };
   }
 
-  if (!env.CLOUDINARY_CLOUD_NAME || !env.CLOUDINARY_API_KEY || !env.CLOUDINARY_API_SECRET) {
+  const cloud = getCloudinaryConfig(env);
+  if (!cloud.cloudName || !cloud.apiKey || !cloud.apiSecret) {
     return { ok: false, error: "Cloudinary is not configured on the server." };
   }
 
-  const auth = btoa(`${env.CLOUDINARY_API_KEY}:${env.CLOUDINARY_API_SECRET}`);
+  const auth = btoa(`${cloud.apiKey}:${cloud.apiSecret}`);
   const url = `https://api.cloudinary.com/v1_1/${encodeURIComponent(
-    env.CLOUDINARY_CLOUD_NAME
+    cloud.cloudName
   )}/resources/${type}/upload/${encodePublicIdPath(id)}`;
 
   const res = await fetch(url, {
@@ -1509,24 +1526,25 @@ async function destroyCloudinaryAsset(env, entry) {
   if (!entry || !entry.id || (entry.type !== "image" && entry.type !== "video")) {
     return;
   }
-  if (!env.CLOUDINARY_CLOUD_NAME || !env.CLOUDINARY_API_KEY || !env.CLOUDINARY_API_SECRET) {
+  const cloud = getCloudinaryConfig(env);
+  if (!cloud.cloudName || !cloud.apiKey || !cloud.apiSecret) {
     return;
   }
   try {
     const timestamp = Math.floor(Date.now() / 1000);
     const signature = await signCloudinaryParams(
       { public_id: entry.id, timestamp },
-      env.CLOUDINARY_API_SECRET
+      cloud.apiSecret
     );
     const form = new URLSearchParams();
     form.set("public_id", entry.id);
     form.set("timestamp", String(timestamp));
-    form.set("api_key", env.CLOUDINARY_API_KEY);
+    form.set("api_key", cloud.apiKey);
     form.set("signature", signature);
 
     await fetch(
       `https://api.cloudinary.com/v1_1/${encodeURIComponent(
-        env.CLOUDINARY_CLOUD_NAME
+        cloud.cloudName
       )}/${entry.type}/destroy`,
       {
         method: "POST",
@@ -1621,7 +1639,8 @@ async function handleUploadSign(request, env, user) {
     return err("Invalid upload type.");
   }
 
-  if (!env.CLOUDINARY_CLOUD_NAME || !env.CLOUDINARY_API_KEY || !env.CLOUDINARY_API_SECRET) {
+  const cloud = getCloudinaryConfig(env);
+  if (!cloud.cloudName || !cloud.apiKey || !cloud.apiSecret) {
     return err("Cloudinary is not configured.", 500);
   }
 
@@ -1644,17 +1663,106 @@ async function handleUploadSign(request, env, user) {
 
   const signature = await signCloudinaryParams(
     { allowed_formats, public_id, timestamp },
-    env.CLOUDINARY_API_SECRET
+    cloud.apiSecret
   );
 
   return json({
-    cloud_name: env.CLOUDINARY_CLOUD_NAME,
-    api_key: env.CLOUDINARY_API_KEY,
+    cloud_name: cloud.cloudName,
+    api_key: cloud.apiKey,
     timestamp,
     public_id,
     allowed_formats,
     signature
   });
+}
+
+async function handleUploadProxy(request, env, user) {
+  if (await isUserBanned(env.DB, user.id)) {
+    return err("Your account is banned from posting.", 403);
+  }
+  if (!user.username) {
+    return err("Please set a Telegram username in Telegram Settings before uploading.", 400);
+  }
+  const cloud = getCloudinaryConfig(env);
+  if (!cloud.cloudName || !cloud.apiKey || !cloud.apiSecret) {
+    return err("Cloudinary is not configured.", 500);
+  }
+
+  let incoming;
+  try {
+    incoming = await request.formData();
+  } catch {
+    return err("Invalid upload payload.");
+  }
+
+  const type = String(incoming.get("type") || "").trim();
+  if (type !== "image" && type !== "video") {
+    return err("Invalid upload type.");
+  }
+  const file = incoming.get("file");
+  if (!file || typeof file !== "object" || typeof file.arrayBuffer !== "function") {
+    return err("Missing file.");
+  }
+
+  const maxBytes = type === "video" ? LIMITS.maxVideoBytes : LIMITS.maxImageBytes;
+  if (file.size <= 0 || file.size > maxBytes) {
+    return err(
+      type === "video" ? "Video exceeds 30 MB limit." : "Photo exceeds 10 MB limit."
+    );
+  }
+
+  const settings = await getSettings(env.DB);
+  const maxUploads = settings.limits.upload_daily;
+  const allowedUpload = await checkAndIncrementUsage(
+    env.DB,
+    "upload_usage",
+    user.id,
+    maxUploads
+  );
+  if (!allowedUpload) {
+    return err(`Daily upload limit reached (${maxUploads} per day). Try again tomorrow.`, 429);
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const public_id = `milkii/items/${user.id}/${crypto.randomUUID()}`;
+  const allowed_formats = type === "video" ? "mp4,mov,webm" : "jpg,jpeg,png,webp";
+  const signature = await signCloudinaryParams(
+    { allowed_formats, public_id, timestamp },
+    cloud.apiSecret
+  );
+
+  const outForm = new FormData();
+  outForm.append("file", file, file.name || (type === "video" ? "video.mp4" : "photo.jpg"));
+  outForm.append("api_key", cloud.apiKey);
+  outForm.append("timestamp", String(timestamp));
+  outForm.append("public_id", public_id);
+  outForm.append("allowed_formats", allowed_formats);
+  outForm.append("signature", signature);
+
+  let cldRes;
+  try {
+    cldRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloud.cloudName)}/${type}/upload`,
+      { method: "POST", body: outForm }
+    );
+  } catch {
+    return err("Could not reach Cloudinary right now.", 502);
+  }
+
+  if (!cldRes.ok) {
+    let cldMsg = "Cloudinary upload failed.";
+    try {
+      const cldData = await cldRes.json();
+      if (cldData?.error?.message) {
+        cldMsg = `Cloudinary: ${cldData.error.message}`;
+      }
+    } catch {
+      // Ignore parse failure
+    }
+    return err(cldMsg, 502);
+  }
+
+  return json({ id: public_id, type });
 }
 
 async function handleCreateItem(context, request, env, user) {
@@ -1847,6 +1955,46 @@ async function handleCreateItem(context, request, env, user) {
 async function handleAi(request, env, user) {
   const FRIENDLY_AI_ERR = "AI is not available right now. Please try again later.";
   const FULL_LANG_NAMES = { en: "english", om: "oromo", am: "amharic" };
+  const PROMPT_LANG_NAMES = {
+    en: "English",
+    om: "Afaan Oromoo (Oromo)",
+    am: "Amharic"
+  };
+
+  function getUniqueChatModels() {
+    const out = [];
+    const seen = new Set();
+    for (const m of [CHAT_MODEL, ...CHAT_FALLBACK_MODELS]) {
+      const clean = typeof m === "string" ? m.trim() : "";
+      if (clean && !seen.has(clean)) {
+        seen.add(clean);
+        out.push(clean);
+      }
+    }
+    return out;
+  }
+
+  function extractAiText(result) {
+    if (!result) return "";
+    if (typeof result === "string") return result.trim();
+    if (typeof result.response === "string" && result.response.trim()) {
+      return result.response.trim();
+    }
+    if (typeof result.output_text === "string" && result.output_text.trim()) {
+      return result.output_text.trim();
+    }
+    if (result.result && typeof result.result.response === "string" && result.result.response.trim()) {
+      return result.result.response.trim();
+    }
+    if (
+      Array.isArray(result.choices) &&
+      typeof result.choices[0]?.message?.content === "string" &&
+      result.choices[0].message.content.trim()
+    ) {
+      return result.choices[0].message.content.trim();
+    }
+    return "";
+  }
 
   async function runAI(model, input) {
     if (!env || !env.AI || typeof env.AI.run !== "function") {
@@ -1858,6 +2006,19 @@ async function handleAi(request, env, user) {
     } catch {
       return { ok: false };
     }
+  }
+
+  async function runChatCascade(messages, maxTokens = 500) {
+    for (const modelId of getUniqueChatModels()) {
+      let res = await runAI(modelId, { messages, max_tokens: maxTokens });
+      let text = res.ok ? extractAiText(res.result) : "";
+      if (text) return text;
+
+      res = await runAI(modelId, { messages });
+      text = res.ok ? extractAiText(res.result) : "";
+      if (text) return text;
+    }
+    return "";
   }
 
   const body = await readJsonBody(request);
@@ -1909,26 +2070,44 @@ async function handleAi(request, env, user) {
         continue;
       }
 
-      let resObj = await runAI(TRANSLATE_MODEL, {
-        text: srcText,
-        source_lang: from,
-        target_lang: to
-      });
-      let out =
-        resObj.ok && typeof resObj.result?.translated_text === "string"
-          ? resObj.result.translated_text.trim()
-          : "";
-
-      if (!out) {
-        resObj = await runAI(TRANSLATE_MODEL, {
+      let out = "";
+      if (from !== "om" && to !== "om") {
+        let resObj = await runAI(TRANSLATE_MODEL, {
           text: srcText,
-          source_lang: FULL_LANG_NAMES[from],
-          target_lang: FULL_LANG_NAMES[to]
+          source_lang: from,
+          target_lang: to
         });
         out =
           resObj.ok && typeof resObj.result?.translated_text === "string"
             ? resObj.result.translated_text.trim()
             : "";
+
+        if (!out) {
+          resObj = await runAI(TRANSLATE_MODEL, {
+            text: srcText,
+            source_lang: FULL_LANG_NAMES[from],
+            target_lang: FULL_LANG_NAMES[to]
+          });
+          out =
+            resObj.ok && typeof resObj.result?.translated_text === "string"
+              ? resObj.result.translated_text.trim()
+              : "";
+        }
+      }
+
+      if (!out) {
+        out = await runChatCascade(
+          [
+            {
+              role: "system",
+              content:
+                `Translate the user's marketplace listing text from ${PROMPT_LANG_NAMES[from]} to ${PROMPT_LANG_NAMES[to]}. ` +
+                "Return ONLY the translated text with no quotes, labels, or explanations."
+            },
+            { role: "user", content: srcText }
+          ],
+          350
+        );
       }
 
       if (!out) {
@@ -1997,22 +2176,7 @@ async function handleAi(request, env, user) {
       "If you do not know something, say so.";
 
     const aiMessages = [{ role: "system", content: systemPrompt }, ...cleaned];
-    const aiCall = await runAI(CHAT_MODEL, { messages: aiMessages, max_tokens: 500 });
-    if (!aiCall.ok || !aiCall.result) {
-      return err(FRIENDLY_AI_ERR, 503);
-    }
-
-    let reply = "";
-    if (typeof aiCall.result.response === "string" && aiCall.result.response.trim()) {
-      reply = aiCall.result.response.trim();
-    } else if (
-      Array.isArray(aiCall.result.choices) &&
-      typeof aiCall.result.choices[0]?.message?.content === "string" &&
-      aiCall.result.choices[0].message.content.trim()
-    ) {
-      reply = aiCall.result.choices[0].message.content.trim();
-    }
-
+    let reply = await runChatCascade(aiMessages, 500);
     if (!reply) {
       return err(FRIENDLY_AI_ERR, 503);
     }
@@ -2115,10 +2279,9 @@ export async function onRequest(context) {
     const owner_ids = Boolean(
       String((env && (env.OWNER_IDS || env.TELEGRAM_ADMINS_ID || env.ADMIN_IDS)) || "").trim()
     );
+    const cloudCheck = getCloudinaryConfig(env);
     const cloudinary = Boolean(
-      String((env && env.CLOUDINARY_CLOUD_NAME) || "").trim() &&
-        String((env && env.CLOUDINARY_API_KEY) || "").trim() &&
-        String((env && env.CLOUDINARY_API_SECRET) || "").trim()
+      cloudCheck.cloudName && cloudCheck.apiKey && cloudCheck.apiSecret
     );
 
     const checks = { database, ai, bot_token, admin_ids, owner_ids, cloudinary };
@@ -2218,8 +2381,9 @@ export async function onRequest(context) {
     // GET /api/config
     if (method === "GET" && route.length === 1 && route[0] === "config") {
       const settings = await getSettings(env.DB);
+      const cloudCfg = getCloudinaryConfig(env);
       return json({
-        cloud_name: env.CLOUDINARY_CLOUD_NAME || "",
+        cloud_name: cloudCfg.cloudName,
         regions: REGIONS,
         categories: CATEGORIES,
         plans: settings.plans,
@@ -2288,6 +2452,11 @@ export async function onRequest(context) {
     // POST /api/upload-sign
     if (method === "POST" && route.length === 1 && route[0] === "upload-sign") {
       return handleUploadSign(request, env, user);
+    }
+
+    // POST /api/upload (server-side Cloudinary proxy fallback)
+    if (method === "POST" && route.length === 1 && route[0] === "upload") {
+      return handleUploadProxy(request, env, user);
     }
 
     // GET /api/items (supports optional ?region=...&city=...)
