@@ -123,7 +123,7 @@
       width: 100%;
       max-width: 560px;
       margin: 0 auto;
-      padding-bottom: calc(92px + var(--safe-bottom));
+      padding-bottom: calc(84px + var(--safe-bottom));
     }
 
     .topbar {
@@ -132,7 +132,12 @@
       z-index: 20;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      padding: 10px 14px;
+      padding: 8px 14px;
+    }
+
+    .topbar.topbar-home {
+      border-bottom: 0;
+      padding-bottom: 6px;
     }
 
     .topbar-row {
@@ -142,68 +147,58 @@
       gap: 10px;
     }
 
+    .brand-lockup {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
     .brand {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 20px;
+      gap: 7px;
+      font-size: 19px;
       font-weight: 800;
       letter-spacing: 0.4px;
+      line-height: 1.15;
       color: var(--primary);
     }
 
+    .brand-tagline {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-muted);
+      line-height: 1.25;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .lang-select {
-      min-height: 44px;
+      min-height: 40px;
       padding: 6px 10px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
       background: var(--surface-2);
       font-weight: 600;
       font-size: 13px;
-    }
-
-    .nav-bar {
-      display: flex;
-      gap: 6px;
-      margin-top: 10px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .nav-bar::-webkit-scrollbar { display: none; }
-
-    .nav-btn {
-      min-height: 44px;
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--surface-2);
-      font-weight: 600;
-      font-size: 13px;
-      white-space: nowrap;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .nav-btn.active {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
+      flex-shrink: 0;
     }
 
     .search-wrap {
-      padding: 12px 14px 4px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 4px 14px 10px;
     }
 
     .search-box {
       display: flex;
       align-items: center;
-      background: var(--surface);
+      background: var(--surface-2);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 0 12px;
-      box-shadow: var(--shadow);
     }
 
     .search-input {
@@ -406,40 +401,217 @@
       padding-top: 2px;
     }
 
-    .fab-wrap {
+    .bottom-nav {
       position: fixed;
       left: 0;
       right: 0;
       bottom: 0;
-      z-index: 25;
-      padding: 10px 14px calc(12px + var(--safe-bottom));
-      background: linear-gradient(to top, var(--bg) 70%, rgba(0, 0, 0, 0));
-      pointer-events: none;
+      z-index: 30;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 5px 6px calc(6px + var(--safe-bottom));
+      box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
       display: flex;
       justify-content: center;
     }
 
-    .fab-btn {
-      pointer-events: auto;
+    .bottom-nav-inner {
       width: 100%;
-      max-width: 532px;
-      min-height: 50px;
+      max-width: 560px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      align-items: end;
+      gap: 2px;
+    }
+
+    .bnav-btn {
+      min-height: 48px;
+      padding: 4px 2px 2px;
       border: 0;
-      border-radius: var(--radius);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      border-radius: var(--radius-sm);
+      transition: color 0.15s ease, transform 0.15s ease;
+    }
+
+    .bnav-btn:active {
+      transform: scale(0.96);
+    }
+
+    .bnav-btn.active {
+      color: var(--primary);
+    }
+
+    .bnav-icon {
+      width: 26px;
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bnav-label {
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.1;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bnav-btn.active .bnav-label {
+      font-weight: 700;
+    }
+
+    .bnav-post-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
       background: var(--primary);
       color: #ffffff;
-      font-size: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 10px rgba(31, 122, 77, 0.35);
+    }
+
+    .bnav-btn-post.active .bnav-post-icon {
+      background: var(--primary-hover);
+    }
+
+    .bnav-btn-post .bnav-label {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .bnav-ai-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border: 1px solid rgba(44, 163, 104, 0.38);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bnav-btn-ai.active .bnav-ai-icon {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .bnav-btn-ai .bnav-label {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .profile-header-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 18px;
       font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 6px 18px rgba(31, 122, 77, 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      flex-shrink: 0;
     }
 
-    .fab-btn:active {
-      background: var(--primary-hover);
+    .profile-menu {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .profile-menu-item {
+      width: 100%;
+      min-height: 54px;
+      padding: 12px 14px;
+      border: 0;
+      border-bottom: 1px solid var(--border);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .profile-menu-item:last-child {
+      border-bottom: 0;
+    }
+
+    .profile-menu-item:active {
+      background: var(--surface-2);
+    }
+
+    .profile-menu-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .profile-menu-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .profile-menu-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .profile-subbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .profile-subbar-title {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 800;
     }
 
     .btn {
@@ -1132,8 +1304,9 @@
       border-radius: var(--radius);
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 220px);
-      min-height: 360px;
+      height: calc(100vh - 166px - var(--safe-bottom));
+      height: calc(100dvh - 166px - var(--safe-bottom));
+      min-height: 340px;
       overflow: hidden;
     }
 
@@ -1461,11 +1634,50 @@
     const I18N = {
       en: {
         openFromTg: "Please open MILKII APP from Telegram.",
+        brandTagline: "Your marketplace. Smarter with AI.",
+        navHome: "Home",
+        navPost: "Post Item",
+        navMessage: "Message",
+        navAskAi: "Ask AI",
+        navProfile: "My Profile",
         navBrowse: "Browse",
         navSaved: "Saved",
         navMine: "My items",
         navAi: "AI",
         navAdmin: "Admin",
+        profMenuProfile: "My Profile",
+        profMenuNotifications: "Notifications",
+        profMenuMyItems: "My Items",
+        profMenuSavedItems: "Saved Items",
+        profMenuAdminDashboard: "Admin Dashboard",
+        profMenuAccountSettings: "Account Settings",
+        backToProfile: "My Profile",
+        profUserId: "Telegram ID",
+        profUsername: "Username",
+        profUsernameMissing: "Not set in Telegram",
+        profRoleLabel: "Role",
+        profRoleOwner: "Owner",
+        profRoleAdmin: "Administrator",
+        profRoleUser: "Member",
+        notifTitle: "Notifications",
+        notifTgStatus: "Telegram notifications",
+        notifEnabled: "Enabled",
+        notifDisabled: "Disabled",
+        notifEnableBtn: "Allow notifications",
+        notifAdminQueue: "Admin review queue",
+        notifRecentUpdates: "Your listing updates",
+        notifNoUpdates: "No listing updates yet.",
+        acctLangLabel: "App language",
+        acctSavedCount: "Saved items on this device",
+        acctClearSavedBtn: "Clear saved items",
+        acctClearedSaved: "Saved items cleared.",
+        msgTitle: "Messages",
+        msgDesc: "Chat directly with sellers on Telegram.",
+        msgSearchPlaceholder: "Search sellers, items, or @username...",
+        msgRecentChats: "Recent seller chats",
+        msgSellerDirectory: "Message sellers from listings",
+        msgOpenTelegram: "Message",
+        msgEmpty: "No seller contacts found yet. Browse items to message sellers.",
         searchPlaceholder: "Search items, cities, regions, brands...",
         allEthiopia: "All Ethiopia",
         cityFilterPlaceholder: "City or town...",
@@ -1697,11 +1909,50 @@
       },
       om: {
         openFromTg: "Please open MILKII APP from Telegram.",
+        brandTagline: "Your marketplace. Smarter with AI.",
+        navHome: "Mana",
+        navPost: "Maxxansi",
+        navMessage: "Ergaa",
+        navAskAi: "AI Gaafadhu",
+        navProfile: "Eenyummaa Koo",
         navBrowse: "Sakatta'i",
         navSaved: "Kuufame",
         navMine: "Koo",
         navAi: "AI",
         navAdmin: "Bulchaa",
+        profMenuProfile: "Eenyummaa Koo",
+        profMenuNotifications: "Beeksisoota",
+        profMenuMyItems: "Meeshaalee Koo",
+        profMenuSavedItems: "Kan Kuufaman",
+        profMenuAdminDashboard: "Bulchiinsa (Admin)",
+        profMenuAccountSettings: "Qindaa'ina Herregaa",
+        backToProfile: "Eenyummaa Koo",
+        profUserId: "Telegram ID",
+        profUsername: "Maqaa fayyadamaa",
+        profUsernameMissing: "Telegram keessatti hin saagamne",
+        profRoleLabel: "Gahee",
+        profRoleOwner: "Abbaa Qabeenyaa",
+        profRoleAdmin: "Bulchaa",
+        profRoleUser: "Miseensa",
+        notifTitle: "Beeksisoota",
+        notifTgStatus: "Beeksisa Telegram",
+        notifEnabled: "Banaadha",
+        notifDisabled: "Cufaaha",
+        notifEnableBtn: "Beeksisa hayyami",
+        notifAdminQueue: "Tarree eegumsaa bulchaa",
+        notifRecentUpdates: "Odeeffannoo meeshaa keessanii",
+        notifNoUpdates: "Oduun haaraan amma hin jiru.",
+        acctLangLabel: "Afaan appii",
+        acctSavedCount: "Meeshaalee kuufaman",
+        acctClearSavedBtn: "Kan kuufaman haqi",
+        acctClearedSaved: "Meeshaaleen kuufaman haqamaniiru.",
+        msgTitle: "Ergaawwan",
+        msgDesc: "Telegram irratti kallattiin gurgurtoota waliin haasa'aa.",
+        msgSearchPlaceholder: "Gurgurtaa, meeshaa ykn @username barbaadi...",
+        msgRecentChats: "Haasaa dhihoo",
+        msgSellerDirectory: "Gurgurtoota meeshaa irraa dubbisi",
+        msgOpenTelegram: "Ergaa",
+        msgEmpty: "Teessoon gurgurtaa amma hin jiru. Meeshaalee sakatta'aa.",
         searchPlaceholder: "Meeshaa, magaalaa, naannoo, biraandii barbaadi...",
         allEthiopia: "Itoophiyaa Hunda",
         cityFilterPlaceholder: "Magaalaa / aanaa...",
@@ -1933,11 +2184,50 @@
       },
       am: {
         openFromTg: "Please open MILKII APP from Telegram.",
+        brandTagline: "Your marketplace. Smarter with AI.",
+        navHome: "መነሻ",
+        navPost: "እቃ ለጥፍ",
+        navMessage: "መልዕክት",
+        navAskAi: "AI ጠይቅ",
+        navProfile: "መገለጫዬ",
         navBrowse: "ገበያ",
         navSaved: "የተቀመጡ",
         navMine: "የእኔ",
         navAi: "AI",
         navAdmin: "አስተዳዳሪ",
+        profMenuProfile: "መገለጫዬ",
+        profMenuNotifications: "ማሳወቂያዎች",
+        profMenuMyItems: "የእኔ እቃዎች",
+        profMenuSavedItems: "የተቀመጡ እቃዎች",
+        profMenuAdminDashboard: "የአስተዳዳሪ ዳሽቦርድ",
+        profMenuAccountSettings: "የመለያ ቅንብሮች",
+        backToProfile: "መገለጫዬ",
+        profUserId: "Telegram ID",
+        profUsername: "Username",
+        profUsernameMissing: "በ Telegram አልተዘጋጀም",
+        profRoleLabel: "ሚና",
+        profRoleOwner: "ባለቤት",
+        profRoleAdmin: "አስተዳዳሪ",
+        profRoleUser: "ተጠቃሚ",
+        notifTitle: "ማሳወቂያዎች",
+        notifTgStatus: "የ Telegram ማሳወቂያ",
+        notifEnabled: "ነቅቷል",
+        notifDisabled: "አልነቃም",
+        notifEnableBtn: "ማሳወቂያ ፍቀድ",
+        notifAdminQueue: "የአስተዳዳሪ ማረጋገጫ ወረፋ",
+        notifRecentUpdates: "የእቃዎችዎ ሁኔታ",
+        notifNoUpdates: "እስካሁን አዲስ ማሳወቂያ የለም።",
+        acctLangLabel: "የመተግበሪያ ቋንቋ",
+        acctSavedCount: "በዚህ ስልክ የተቀመጡ እቃዎች",
+        acctClearSavedBtn: "የተቀመጡትን አጽዳ",
+        acctClearedSaved: "የተቀመጡ እቃዎች ተሰርዘዋል።",
+        msgTitle: "መልዕክቶች",
+        msgDesc: "በ Telegram ከሻጮች ጋር በቀጥታ ይነጋገሩ።",
+        msgSearchPlaceholder: "ሻጭ፣ እቃ ወይም @username ይፈልጉ...",
+        msgRecentChats: "የቅርብ ጊዜ ውይይቶች",
+        msgSellerDirectory: "ከማስታወቂያዎች ሻጮችን ያናግሩ",
+        msgOpenTelegram: "መልዕክት",
+        msgEmpty: "እስካሁን ሻጭ አልተገኘም። መነሻ ላይ እቃዎችን ይመልከቱ።",
         searchPlaceholder: "እቃ፣ ከተማ፣ ክልል፣ ብራንድ ይፈልጉ...",
         allEthiopia: "መላው ኢትዮጵያ",
         cityFilterPlaceholder: "ከተማ ይፈልጉ...",
@@ -2227,6 +2517,10 @@
         cityFilter: "",
         catFilter: "all",
         saved: loadSavedItems(),
+        recentChats: loadRecentChats(),
+        msgSearch: "",
+        profileSection: "menu",
+        mineLoadedOnce: false,
         aiMessages: [],
         aiBusy: false,
         aiLastReqAt: 0,
@@ -2277,6 +2571,52 @@
         try {
           localStorage.setItem("milkii_saved", JSON.stringify(state.saved));
         } catch {}
+      }
+
+      function loadRecentChats() {
+        try {
+          const raw = localStorage.getItem("milkii_recent_chats");
+          const parsed = JSON.parse(raw || "[]");
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function persistRecentChats() {
+        try {
+          localStorage.setItem("milkii_recent_chats", JSON.stringify(state.recentChats));
+        } catch {}
+      }
+
+      function recordRecentChat(cleanTg, item = null) {
+        if (!cleanTg) return;
+        const entry = {
+          tg: cleanTg,
+          title: item && item.title ? String(item.title) : "",
+          price: item && item.price !== undefined ? Number(item.price) : null,
+          itemId: item && item.id ? Number(item.id) : null,
+          at: Date.now()
+        };
+        const idx = state.recentChats.findIndex(
+          (c) => c.tg === cleanTg && (entry.itemId ? c.itemId === entry.itemId : true)
+        );
+        if (idx >= 0) state.recentChats.splice(idx, 1);
+        state.recentChats.unshift(entry);
+        if (state.recentChats.length > 20) state.recentChats = state.recentChats.slice(0, 20);
+        persistRecentChats();
+      }
+
+      function openSellerTelegram(cleanTg, item = null) {
+        const safeTg = String(cleanTg || "").replace(/[^a-zA-Z0-9_]/g, "");
+        if (!safeTg) return;
+        recordRecentChat(safeTg, item);
+        const url = `https://t.me/${encodeURIComponent(safeTg)}`;
+        if (tg && tg.openTelegramLink) {
+          tg.openTelegramLink(url);
+        } else {
+          window.location.href = url;
+        }
       }
 
       function t(key, vars) {
@@ -2487,21 +2827,16 @@
       }
 
       function renderHeader() {
-        const isAdmin = Boolean(state.me && state.me.isAdmin);
-        const navs = [
-          { id: "browse", label: t("navBrowse") },
-          { id: "saved", label: `${t("navSaved")} (${state.saved.length})` },
-          { id: "mine", label: t("navMine") },
-          { id: "ai", label: t("navAi") }
-        ];
-        if (isAdmin) {
-          navs.push({ id: "admin", label: t("navAdmin") });
-        }
+        const isHome = state.view === "browse";
         return `
-          <header class="topbar">
+          <header class="topbar${isHome ? " topbar-home" : ""}">
             <div class="topbar-row">
-              <div class="brand">
-                <span>🛒 MILKII APP</span>
+              <div class="brand-lockup">
+                <div class="brand">
+                  <span aria-hidden="true">🛒</span>
+                  <span>MILKII APP</span>
+                </div>
+                <div class="brand-tagline">${esc(t("brandTagline"))}</div>
               </div>
               <select id="langSelect" class="lang-select" aria-label="Language">
                 <option value="en"${state.lang === "en" ? " selected" : ""}>English</option>
@@ -2509,17 +2844,59 @@
                 <option value="am"${state.lang === "am" ? " selected" : ""}>አማርኛ</option>
               </select>
             </div>
-            <nav class="nav-bar">
-              ${navs
+          </header>
+        `;
+      }
+
+      function renderBottomNav() {
+        const items = [
+          {
+            id: "browse",
+            label: t("navHome"),
+            cls: "",
+            icon: `<span class="bnav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg></span>`
+          },
+          {
+            id: "post",
+            label: t("navPost"),
+            cls: "bnav-btn-post",
+            icon: `<span class="bnav-post-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>`
+          },
+          {
+            id: "messages",
+            label: t("navMessage"),
+            cls: "",
+            icon: `<span class="bnav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>`
+          },
+          {
+            id: "ai",
+            label: t("navAskAi"),
+            cls: "bnav-btn-ai",
+            icon: `<span class="bnav-ai-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.1 6.2L20.3 10.3l-6.2 2.1L12 18.6l-2.1-6.2L3.7 10.3l6.2-2.1L12 2zm7.2 13.5l1 2.9 2.9 1-2.9 1-1 2.9-1-2.9-2.9-1 2.9-1 1-2.9z"/></svg></span>`
+          },
+          {
+            id: "profile",
+            label: t("navProfile"),
+            cls: "",
+            icon: `<span class="bnav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>`
+          }
+        ];
+
+        return `
+          <nav class="bottom-nav" aria-label="Main navigation">
+            <div class="bottom-nav-inner">
+              ${items
                 .map(
-                  (n) =>
-                    `<button type="button" class="nav-btn${
-                      state.view === n.id ? " active" : ""
-                    }" data-nav="${esc(n.id)}">${esc(n.label)}</button>`
+                  (it) => `
+                    <button type="button" class="bnav-btn ${it.cls}${state.view === it.id ? " active" : ""}" data-nav="${esc(it.id)}" aria-current="${state.view === it.id ? "page" : "false"}">
+                      ${it.icon}
+                      <span class="bnav-label">${esc(it.label)}</span>
+                    </button>
+                  `
                 )
                 .join("")}
-            </nav>
-          </header>
+            </div>
+          </nav>
         `;
       }
 
@@ -2597,97 +2974,406 @@
                 : `<div class="grid">${filtered.map(renderCard).join("")}</div>`
             }
           </main>
-          <div class="fab-wrap">
-            <button type="button" id="startPostBtn" class="fab-btn">＋ ${esc(t("postItem"))}</button>
-          </div>
         `;
       }
 
       function renderSavedView() {
         return `
-          <main class="content">
-            ${
-              state.saved.length === 0
-                ? `<div class="state-box"><span class="emoji">💛</span>${esc(t("emptySaved"))}</div>`
-                : `<div class="grid">${state.saved.map(renderCard).join("")}</div>`
-            }
-          </main>
-          <div class="fab-wrap">
-            <button type="button" id="startPostBtn" class="fab-btn">＋ ${esc(t("postItem"))}</button>
-          </div>
+          ${
+            state.saved.length === 0
+              ? `<div class="state-box"><span class="emoji">💛</span>${esc(t("emptySaved"))}</div>`
+              : `<div class="grid">${state.saved.map(renderCard).join("")}</div>`
+          }
         `;
       }
 
       function renderMineView() {
         const cats = state.config ? state.config.categories : {};
         return `
-          <main class="content">
-            ${
-              state.mineLoading
-                ? `<div class="state-box"><span class="emoji">⏳</span>${esc(t("loading"))}</div>`
-                : state.mine.length === 0
-                ? `<div class="state-box"><span class="emoji">📦</span>${esc(t("emptyMine"))}</div>`
-                : `<div class="list-stack">
-                    ${state.mine
-                      .map((it) => {
-                        const cover = getCoverImage(it.media);
-                        const cat = cats[it.cat];
-                        const loc = formatItemLocation(it);
-                        const stClass =
-                          it.status === "approved"
-                            ? "st-approved"
-                            : it.status === "rejected"
-                            ? "st-rejected"
-                            : it.status === "sold"
-                            ? "st-sold"
-                            : "st-pending";
-                        const stText =
-                          it.status === "approved"
-                            ? t("statusApproved")
-                            : it.status === "rejected"
-                            ? t("statusRejected")
-                            : it.status === "sold"
-                            ? t("statusSold")
-                            : t("statusPending");
-                        return `
-                          <div class="row-card">
-                            <div class="row-main">
-                              <div class="row-thumb">
-                                ${
-                                  cover
-                                    ? `<img src="${esc(cloudThumbUrl(cover.id))}" alt="" loading="lazy" />`
-                                    : esc(cat ? cat.emoji : "📦")
-                                }
-                              </div>
-                              <div class="row-info">
-                                <div class="row-title">${esc(it.title)}</div>
-                                <div class="row-sub">${esc(formatPrice(it.price))}${loc ? " · " + esc(loc) : ""}</div>
-                                <span class="status-badge ${stClass}">${esc(stText)}</span>
-                                ${
-                                  it.status === "rejected" && it.reject_reason
-                                    ? `<div class="field-error">${esc(t("reasonPrefix") + it.reject_reason)}</div>`
-                                    : ""
-                                }
-                              </div>
-                            </div>
-                            <div class="row-actions">
+          ${
+            state.mineLoading
+              ? `<div class="state-box"><span class="emoji">⏳</span>${esc(t("loading"))}</div>`
+              : state.mine.length === 0
+              ? `<div class="state-box"><span class="emoji">📦</span>${esc(t("emptyMine"))}</div>`
+              : `<div class="list-stack">
+                  ${state.mine
+                    .map((it) => {
+                      const cover = getCoverImage(it.media);
+                      const cat = cats[it.cat];
+                      const loc = formatItemLocation(it);
+                      const stClass =
+                        it.status === "approved"
+                          ? "st-approved"
+                          : it.status === "rejected"
+                          ? "st-rejected"
+                          : it.status === "sold"
+                          ? "st-sold"
+                          : "st-pending";
+                      const stText =
+                        it.status === "approved"
+                          ? t("statusApproved")
+                          : it.status === "rejected"
+                          ? t("statusRejected")
+                          : it.status === "sold"
+                          ? t("statusSold")
+                          : t("statusPending");
+                      return `
+                        <div class="row-card">
+                          <div class="row-main">
+                            <div class="row-thumb">
                               ${
-                                it.status !== "sold"
-                                  ? `<button type="button" class="btn btn-sm" data-mine-sold="${esc(it.id)}">${esc(t("markSold"))}</button>`
+                                cover
+                                  ? `<img src="${esc(cloudThumbUrl(cover.id))}" alt="" loading="lazy" />`
+                                  : esc(cat ? cat.emoji : "📦")
+                              }
+                            </div>
+                            <div class="row-info">
+                              <div class="row-title">${esc(it.title)}</div>
+                              <div class="row-sub">${esc(formatPrice(it.price))}${loc ? " · " + esc(loc) : ""}</div>
+                              <span class="status-badge ${stClass}">${esc(stText)}</span>
+                              ${
+                                it.status === "rejected" && it.reject_reason
+                                  ? `<div class="field-error">${esc(t("reasonPrefix") + it.reject_reason)}</div>`
                                   : ""
                               }
-                              <button type="button" class="btn btn-sm btn-danger" data-mine-delete="${esc(it.id)}">${esc(t("deleteBtn"))}</button>
                             </div>
                           </div>
-                        `;
-                      })
+                          <div class="row-actions">
+                            ${
+                              it.status !== "sold"
+                                ? `<button type="button" class="btn btn-sm" data-mine-sold="${esc(it.id)}">${esc(t("markSold"))}</button>`
+                                : ""
+                            }
+                            <button type="button" class="btn btn-sm btn-danger" data-mine-delete="${esc(it.id)}">${esc(t("deleteBtn"))}</button>
+                          </div>
+                        </div>
+                      `;
+                    })
+                    .join("")}
+                </div>`
+          }
+        `;
+      }
+
+      function renderMessagesView() {
+        const needle = state.msgSearch.trim().toLowerCase();
+        const cats = state.config ? state.config.categories : {};
+        const poolMap = new Map();
+
+        for (const s of state.saved) {
+          if (s && s.tg) poolMap.set(s.id, s);
+        }
+        for (const it of state.items) {
+          if (it && it.tg && !poolMap.has(it.id)) poolMap.set(it.id, it);
+        }
+
+        const listingRows = Array.from(poolMap.values()).filter((it) => {
+          if (!needle) return true;
+          return [it.title, it.tg, it.city, it.region].join(" ").toLowerCase().includes(needle);
+        });
+
+        const recentRows = (state.recentChats || []).filter((c) => {
+          if (!needle) return true;
+          return [c.tg, c.title].join(" ").toLowerCase().includes(needle);
+        });
+
+        return `
+          <main class="content">
+            <div class="section-card" style="margin-bottom:10px;">
+              <h3 class="section-title" style="margin-bottom:4px;">${esc(t("msgTitle"))}</h3>
+              <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">${esc(t("msgDesc"))}</div>
+              <div class="search-box">
+                <input id="msgSearchInput" class="search-input" type="search" value="${esc(state.msgSearch)}" placeholder="${esc(t("msgSearchPlaceholder"))}" />
+                ${state.msgSearch ? `<button type="button" id="clearMsgSearchBtn" class="clear-search" aria-label="Clear">✕</button>` : ""}
+              </div>
+            </div>
+
+            ${
+              recentRows.length
+                ? `<div class="section-card">
+                     <h4 class="section-title">${esc(t("msgRecentChats"))}</h4>
+                     <div class="list-stack">
+                       ${recentRows
+                         .map(
+                           (c) => `
+                             <div class="row-card" style="box-shadow:none;background:var(--surface-2);">
+                               <div class="row-main" style="align-items:center;justify-content:space-between;">
+                                 <div class="row-info">
+                                   <div class="row-title">@${esc(c.tg)}</div>
+                                   ${c.title ? `<div class="row-sub">${esc(c.title)}${typeof c.price === "number" && !Number.isNaN(c.price) ? " · " + esc(formatPrice(c.price)) : ""}</div>` : ""}
+                                 </div>
+                                 <button type="button" class="btn btn-sm btn-primary" data-msg-seller="${esc(c.tg)}" data-msg-item-id="${esc(c.itemId || "")}">💬 ${esc(t("msgOpenTelegram"))}</button>
+                               </div>
+                             </div>
+                           `
+                         )
+                         .join("")}
+                     </div>
+                   </div>`
+                : ""
+            }
+
+            <div class="section-card">
+              <h4 class="section-title">${esc(t("msgSellerDirectory"))}</h4>
+              ${
+                state.itemsLoading && listingRows.length === 0
+                  ? `<div class="state-box"><span class="emoji">⏳</span>${esc(t("loading"))}</div>`
+                  : listingRows.length === 0
+                  ? `<div class="state-box"><span class="emoji">💬</span>${esc(t("msgEmpty"))}</div>`
+                  : `<div class="list-stack">
+                      ${listingRows
+                        .slice(0, 40)
+                        .map((it) => {
+                          const cover = getCoverImage(it.media);
+                          const cat = cats[it.cat];
+                          const cleanTg = String(it.tg || "").replace(/[^a-zA-Z0-9_]/g, "");
+                          if (!cleanTg) return "";
+                          return `
+                            <div class="row-card" style="box-shadow:none;background:var(--surface-2);">
+                              <div class="row-main">
+                                <div class="row-thumb">
+                                  ${
+                                    cover
+                                      ? `<img src="${esc(cloudThumbUrl(cover.id))}" alt="" loading="lazy" />`
+                                      : esc(cat ? cat.emoji : "📦")
+                                  }
+                                </div>
+                                <div class="row-info">
+                                  <div class="row-title">${esc(it.title)}</div>
+                                  <div class="row-sub">${esc(formatPrice(it.price))} · @${esc(cleanTg)}</div>
+                                  <div class="row-sub">📍 ${esc(formatItemLocation(it) || "-")}</div>
+                                </div>
+                              </div>
+                              <div class="row-actions">
+                                <button type="button" class="btn btn-sm" data-msg-open-item="${esc(it.id)}">${esc(t("btnView"))}</button>
+                                <button type="button" class="btn btn-sm btn-primary" data-msg-seller="${esc(cleanTg)}" data-msg-item-id="${esc(it.id)}">💬 ${esc(t("msgOpenTelegram"))} (@${esc(cleanTg)})</button>
+                              </div>
+                            </div>
+                          `;
+                        })
+                        .join("")}
+                    </div>`
+              }
+            </div>
+          </main>
+        `;
+      }
+
+      function renderProfileOverviewSection() {
+        const me = state.me || {};
+        const roleText = me.isOwner
+          ? t("profRoleOwner")
+          : me.isAdmin
+          ? t("profRoleAdmin")
+          : t("profRoleUser");
+        return `
+          <div class="section-card">
+            <h3 class="section-title">${esc(t("profMenuProfile"))}</h3>
+            <table class="details-table" style="margin-bottom:0;">
+              <tr><th>${esc(t("profUsername"))}</th><td>${me.username ? "@" + esc(me.username) : esc(t("profUsernameMissing"))}</td></tr>
+              <tr><th>${esc(t("profUserId"))}</th><td>${esc(me.id || "-")}</td></tr>
+              <tr><th>${esc(t("profRoleLabel"))}</th><td>${esc(roleText)}</td></tr>
+              <tr><th>${esc(t("notifTgStatus"))}</th><td>${esc(me.canDm ? t("notifEnabled") : t("notifDisabled"))}</td></tr>
+            </table>
+          </div>
+          ${!me.username ? `<div class="notice-box">${esc(t("noTgUsername"))}</div>` : ""}
+        `;
+      }
+
+      function renderProfileNotificationsSection() {
+        const me = state.me || {};
+        const isAdmin = Boolean(me.isAdmin);
+        const canDm = Boolean(me.canDm);
+        const stMap = {
+          approved: t("statusApproved"),
+          rejected: t("statusRejected"),
+          sold: t("statusSold"),
+          pending: t("statusPending")
+        };
+        return `
+          <div class="section-card">
+            <h3 class="section-title">${esc(t("notifTgStatus"))}</h3>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <span class="status-badge ${canDm ? "st-approved" : "st-pending"}" style="margin-top:0;">${esc(canDm ? t("notifEnabled") : t("notifDisabled"))}</span>
+              ${
+                !canDm && tg && typeof tg.requestWriteAccess === "function"
+                  ? `<button type="button" id="enableNotifsBtn" class="btn btn-sm btn-primary">${esc(t("notifEnableBtn"))}</button>`
+                  : ""
+              }
+            </div>
+          </div>
+
+          ${
+            isAdmin && state.adminStats
+              ? `<div class="section-card">
+                   <h3 class="section-title">${esc(t("notifAdminQueue"))}</h3>
+                   <div class="stats-grid" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:10px;">
+                     <div class="stat-box"><div class="stat-val">${esc(state.adminStats.pending || 0)}</div><div class="stat-lbl">${esc(t("tabPending"))}</div></div>
+                     <div class="stat-box"><div class="stat-val">${esc(state.adminStats.reported || 0)}</div><div class="stat-lbl">${esc(t("tabReported"))}</div></div>
+                   </div>
+                   <button type="button" class="btn btn-primary" style="width:100%;" data-profile-sec="admin">${esc(t("profMenuAdminDashboard"))}</button>
+                 </div>`
+              : ""
+          }
+
+          <div class="section-card">
+            <h3 class="section-title">${esc(t("notifRecentUpdates"))}</h3>
+            ${
+              state.mineLoading
+                ? `<div style="color:var(--text-muted);font-size:13px;">${esc(t("loading"))}</div>`
+                : state.mine.length === 0
+                ? `<div style="color:var(--text-muted);font-size:13px;">${esc(t("notifNoUpdates"))}</div>`
+                : `<div class="list-stack">
+                    ${state.mine
+                      .slice(0, 15)
+                      .map(
+                        (it) => `
+                          <div class="row-card" style="box-shadow:none;background:var(--surface-2);">
+                            <div class="row-title">${esc(it.title)}</div>
+                            <div class="row-sub">${esc(formatPrice(it.price))}</div>
+                            <span class="status-badge ${
+                              it.status === "approved"
+                                ? "st-approved"
+                                : it.status === "rejected"
+                                ? "st-rejected"
+                                : it.status === "sold"
+                                ? "st-sold"
+                                : "st-pending"
+                            }">${esc(stMap[it.status] || it.status)}</span>
+                            ${
+                              it.status === "rejected" && it.reject_reason
+                                ? `<div class="field-error">${esc(t("reasonPrefix") + it.reject_reason)}</div>`
+                                : ""
+                            }
+                          </div>
+                        `
+                      )
                       .join("")}
                   </div>`
             }
-          </main>
-          <div class="fab-wrap">
-            <button type="button" id="startPostBtn" class="fab-btn">＋ ${esc(t("postItem"))}</button>
           </div>
+        `;
+      }
+
+      function renderProfileAccountSettingsSection() {
+        const me = state.me || {};
+        return `
+          <div class="section-card">
+            <h3 class="section-title">${esc(t("profMenuAccountSettings"))}</h3>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("acctLangLabel"))}</span></label>
+              <select id="acctLangSelect" class="select">
+                <option value="en"${state.lang === "en" ? " selected" : ""}>English</option>
+                <option value="om"${state.lang === "om" ? " selected" : ""}>Afaan Oromoo</option>
+                <option value="am"${state.lang === "am" ? " selected" : ""}>አማርኛ</option>
+              </select>
+            </div>
+            <div class="field-group" style="margin-bottom:0;">
+              <label class="field-label"><span>${esc(t("profUsername"))}</span></label>
+              <input class="input" type="text" value="${esc(me.username ? "@" + me.username : t("profUsernameMissing"))}" readonly style="background:var(--surface-2);color:var(--text-muted);" />
+            </div>
+          </div>
+          ${
+            !me.isAdmin
+              ? `<div class="section-card">
+                   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;">
+                     <span style="font-weight:700;font-size:14px;">${esc(t("acctSavedCount"))}</span>
+                     <strong>${esc(state.saved.length)}</strong>
+                   </div>
+                   <button type="button" id="acctClearSavedBtn" class="btn btn-danger" style="width:100%;" ${state.saved.length === 0 ? "disabled" : ""}>${esc(t("acctClearSavedBtn"))}</button>
+                 </div>`
+              : ""
+          }
+        `;
+      }
+
+      function renderProfileView() {
+        const me = state.me || {};
+        const isAdmin = Boolean(me.isAdmin);
+        const displayName = me.username ? "@" + me.username : me.id ? `#${me.id}` : "User";
+        const initials = (me.username || "M").slice(0, 1).toUpperCase();
+
+        if (!isAdmin && state.profileSection === "admin") {
+          state.profileSection = "menu";
+        }
+
+        const menuItems = isAdmin
+          ? [
+              { id: "overview", label: t("profMenuProfile"), icon: "👤", meta: "" },
+              { id: "notifications", label: t("profMenuNotifications"), icon: "🔔", meta: me.canDm ? "" : "!" },
+              { id: "admin", label: t("profMenuAdminDashboard"), icon: "🛡️", meta: "" },
+              { id: "settings", label: t("profMenuAccountSettings"), icon: "⚙️", meta: "" }
+            ]
+          : [
+              { id: "overview", label: t("profMenuProfile"), icon: "👤", meta: "" },
+              { id: "notifications", label: t("profMenuNotifications"), icon: "🔔", meta: me.canDm ? "" : "!" },
+              { id: "mine", label: t("profMenuMyItems"), icon: "📦", meta: state.mineLoadedOnce ? String(state.mine.length) : "" },
+              { id: "saved", label: t("profMenuSavedItems"), icon: "💛", meta: String(state.saved.length) },
+              { id: "settings", label: t("profMenuAccountSettings"), icon: "⚙️", meta: "" }
+            ];
+
+        if (state.profileSection === "menu") {
+          const roleBadge = me.isOwner
+            ? t("profRoleOwner")
+            : isAdmin
+            ? t("profRoleAdmin")
+            : t("profRoleUser");
+          return `
+            <main class="content">
+              <div class="profile-header-card">
+                <div class="profile-avatar">${esc(initials)}</div>
+                <div class="row-info">
+                  <div class="row-title">${esc(displayName)}</div>
+                  <div class="row-sub">ID: ${esc(me.id || "-")} · ${esc(roleBadge)}</div>
+                </div>
+              </div>
+              <div class="profile-menu">
+                ${menuItems
+                  .map(
+                    (m) => `
+                      <button type="button" class="profile-menu-item" data-profile-sec="${esc(m.id)}">
+                        <span class="profile-menu-left">
+                          <span class="profile-menu-icon">${m.icon}</span>
+                          <span>${esc(m.label)}</span>
+                        </span>
+                        <span class="profile-menu-right">
+                          ${m.meta ? `<span>${esc(m.meta)}</span>` : ""}
+                          <span>›</span>
+                        </span>
+                      </button>
+                    `
+                  )
+                  .join("")}
+              </div>
+            </main>
+          `;
+        }
+
+        const sectionTitleMap = {
+          overview: t("profMenuProfile"),
+          notifications: t("profMenuNotifications"),
+          mine: t("profMenuMyItems"),
+          saved: t("profMenuSavedItems"),
+          admin: t("profMenuAdminDashboard"),
+          settings: t("profMenuAccountSettings")
+        };
+
+        let body = "";
+        if (state.profileSection === "overview") body = renderProfileOverviewSection();
+        else if (state.profileSection === "notifications") body = renderProfileNotificationsSection();
+        else if (state.profileSection === "mine") body = renderMineView();
+        else if (state.profileSection === "saved") body = renderSavedView();
+        else if (state.profileSection === "admin" && isAdmin) body = renderAdminView();
+        else if (state.profileSection === "settings") body = renderProfileAccountSettingsSection();
+
+        return `
+          <main class="content">
+            <div class="profile-subbar">
+              <button type="button" id="profileBackBtn" class="btn btn-sm">← ${esc(t("backToProfile"))}</button>
+              <h2 class="profile-subbar-title">${esc(sectionTitleMap[state.profileSection] || t("navProfile"))}</h2>
+            </div>
+            ${body}
+          </main>
         `;
       }
 
@@ -3269,17 +3955,15 @@
         else if (current === "settings") body = renderAdminSettingsSection();
 
         return `
-          <main class="content">
-            <div class="chips-wrap" style="padding:4px 0 12px;">
-              ${sections
-                .map(
-                  (s) =>
-                    `<button type="button" class="chip${current === s.id ? " active" : ""}" data-admin-section="${esc(s.id)}">${esc(s.label)}</button>`
-                )
-                .join("")}
-            </div>
-            ${body}
-          </main>
+          <div class="chips-wrap" style="padding:4px 0 12px;">
+            ${sections
+              .map(
+                (s) =>
+                  `<button type="button" class="chip${current === s.id ? " active" : ""}" data-admin-section="${esc(s.id)}">${esc(s.label)}</button>`
+              )
+              .join("")}
+          </div>
+          ${body}
         `;
       }
 
@@ -3355,8 +4039,10 @@
 
         if (p.step === 1) {
           nextDisabled = !p.cat;
+          const hasUsername = Boolean(state.me && state.me.username);
           bodyHtml = `
             <h3 style="margin:0 0 10px;">${esc(t("step1Title"))}</h3>
+            ${!hasUsername ? `<div class="notice-box">${esc(t("noTgUsername"))}</div>` : ""}
             <div class="notice-box">⚠️ ${esc(t("step1Notice"))}</div>
             <div class="cat-picker">
               ${Object.keys(cats)
@@ -3757,15 +4443,22 @@
 
       function renderApp() {
         const root = document.getElementById("root");
+        const isAdmin = Boolean(state.me && state.me.isAdmin);
+        if (!isAdmin && state.view === "profile" && state.profileSection === "admin") {
+          state.profileSection = "menu";
+        }
         let mainHtml = "";
         if (state.view === "browse") mainHtml = renderBrowseView();
-        else if (state.view === "saved") mainHtml = renderSavedView();
-        else if (state.view === "mine") mainHtml = renderMineView();
-        else if (state.view === "admin") mainHtml = renderAdminView();
-        else if (state.view === "ai") mainHtml = renderAiView();
         else if (state.view === "post") mainHtml = renderPostView();
+        else if (state.view === "messages") mainHtml = renderMessagesView();
+        else if (state.view === "ai") mainHtml = renderAiView();
+        else if (state.view === "profile") mainHtml = renderProfileView();
+        else {
+          state.view = "browse";
+          mainHtml = renderBrowseView();
+        }
 
-        root.innerHTML = `<div class="app-shell">${renderHeader()}${mainHtml}</div>`;
+        root.innerHTML = `<div class="app-shell">${renderHeader()}${mainHtml}</div>${renderBottomNav()}`;
         bindEvents();
 
         if (state.view === "ai") {
@@ -3896,12 +4589,7 @@
 
         if (cleanTg) {
           document.getElementById("msgSellerBtn").addEventListener("click", () => {
-            const url = `https://t.me/${encodeURIComponent(cleanTg)}`;
-            if (tg && tg.openTelegramLink) {
-              tg.openTelegramLink(url);
-            } else {
-              window.location.href = url;
-            }
+            openSellerTelegram(cleanTg, item);
           });
         }
 
@@ -4530,6 +5218,7 @@
         try {
           const data = await api("/api/mine");
           state.mine = Array.isArray(data.items) ? data.items : [];
+          state.mineLoadedOnce = true;
         } catch (e) {
           showToast(e.message);
         } finally {
@@ -4626,6 +5315,7 @@
       }
 
       function loadCurrentAdminSection() {
+        if (!state.me || !state.me.isAdmin) return;
         if (state.adminSection === "users") return loadAdminUsers(false);
         if (state.adminSection === "analytics") return loadAdminAnalytics();
         if (state.adminSection === "audit" && state.me && state.me.isOwner) return loadAdminAudit(false);
@@ -4734,11 +5424,139 @@
         document.querySelectorAll("[data-nav]").forEach((btn) => {
           btn.addEventListener("click", () => {
             const target = btn.getAttribute("data-nav");
+            if (target === "post") {
+              if (state.view !== "post" || state.post.submitted) {
+                state.post = createEmptyPost(state.lang);
+              }
+              state.view = "post";
+              renderApp();
+              return;
+            }
+            if (target === "profile") {
+              state.view = "profile";
+              state.profileSection = "menu";
+              renderApp();
+              return;
+            }
             state.view = target;
             if (target === "browse") loadBrowseItems();
-            else if (target === "mine") loadMineItems();
-            else if (target === "admin") loadCurrentAdminSection();
             else renderApp();
+          });
+        });
+
+        document.querySelectorAll("[data-profile-sec]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const sec = btn.getAttribute("data-profile-sec");
+            const isAdmin = Boolean(state.me && state.me.isAdmin);
+            if (sec === "admin" && !isAdmin) return;
+            if ((sec === "mine" || sec === "saved") && isAdmin) return;
+            state.view = "profile";
+            state.profileSection = sec || "menu";
+            if (sec === "mine") {
+              loadMineItems();
+            } else if (sec === "admin") {
+              loadCurrentAdminSection();
+            } else if (sec === "notifications") {
+              if (!state.mineLoadedOnce) loadMineItems();
+              if (isAdmin && !state.adminStats) loadAdminItems();
+              renderApp();
+            } else {
+              renderApp();
+            }
+          });
+        });
+
+        const profileBackBtn = document.getElementById("profileBackBtn");
+        if (profileBackBtn) {
+          profileBackBtn.addEventListener("click", () => {
+            state.profileSection = "menu";
+            renderApp();
+          });
+        }
+
+        const enableNotifsBtn = document.getElementById("enableNotifsBtn");
+        if (enableNotifsBtn) {
+          enableNotifsBtn.addEventListener("click", () => {
+            if (tg && typeof tg.requestWriteAccess === "function") {
+              try {
+                tg.requestWriteAccess((allowed) => {
+                  if (allowed) {
+                    api("/api/me")
+                      .then((me) => {
+                        state.me = me;
+                        renderApp();
+                      })
+                      .catch(() => {});
+                  }
+                });
+              } catch {}
+            }
+          });
+        }
+
+        const acctLangSelect = document.getElementById("acctLangSelect");
+        if (acctLangSelect) {
+          acctLangSelect.addEventListener("change", (e) => {
+            state.lang = e.target.value;
+            localStorage.setItem("milkii_lang", state.lang);
+            api("/api/me").catch(() => {});
+            renderApp();
+          });
+        }
+
+        const acctClearSavedBtn = document.getElementById("acctClearSavedBtn");
+        if (acctClearSavedBtn) {
+          acctClearSavedBtn.addEventListener("click", () => {
+            state.saved = [];
+            persistSavedItems();
+            showToast(t("acctClearedSaved"));
+            renderApp();
+          });
+        }
+
+        const msgSearchInput = document.getElementById("msgSearchInput");
+        if (msgSearchInput) {
+          msgSearchInput.addEventListener("input", (e) => {
+            const pos = e.target.selectionStart;
+            state.msgSearch = e.target.value;
+            renderApp();
+            const again = document.getElementById("msgSearchInput");
+            if (again) {
+              again.focus();
+              try { again.setSelectionRange(pos, pos); } catch {}
+            }
+          });
+        }
+
+        const clearMsgSearchBtn = document.getElementById("clearMsgSearchBtn");
+        if (clearMsgSearchBtn) {
+          clearMsgSearchBtn.addEventListener("click", () => {
+            state.msgSearch = "";
+            renderApp();
+          });
+        }
+
+        document.querySelectorAll("[data-msg-seller]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const sellerTg = btn.getAttribute("data-msg-seller");
+            const itemId = Number(btn.getAttribute("data-msg-item-id"));
+            const item =
+              state.items.find((x) => x.id === itemId) ||
+              state.saved.find((x) => x.id === itemId) ||
+              (state.recentChats || []).find((c) => c.tg === sellerTg && (!itemId || c.itemId === itemId)) ||
+              null;
+            openSellerTelegram(sellerTg, item);
+            renderApp();
+          });
+        });
+
+        document.querySelectorAll("[data-msg-open-item]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = Number(btn.getAttribute("data-msg-open-item"));
+            const item =
+              state.items.find((x) => x.id === id) ||
+              state.saved.find((x) => x.id === id);
+            if (item) openItemSheet(item, false);
           });
         });
 
@@ -4803,19 +5621,6 @@
             if (item) openItemSheet(item, false);
           });
         });
-
-        const startPostBtn = document.getElementById("startPostBtn");
-        if (startPostBtn) {
-          startPostBtn.addEventListener("click", () => {
-            if (!state.me || !state.me.username) {
-              showToast(t("noTgUsername"));
-              return;
-            }
-            state.post = createEmptyPost(state.lang);
-            state.view = "post";
-            renderApp();
-          });
-        }
 
         document.querySelectorAll("[data-mine-sold]").forEach((btn) => {
           btn.addEventListener("click", () => {
@@ -5223,8 +6028,14 @@
         const postDoneBtn = document.getElementById("postDoneBtn");
         if (postDoneBtn) {
           postDoneBtn.addEventListener("click", () => {
-            state.view = "mine";
-            loadMineItems();
+            if (state.me && state.me.isAdmin) {
+              state.view = "browse";
+              loadBrowseItems();
+            } else {
+              state.view = "profile";
+              state.profileSection = "mine";
+              loadMineItems();
+            }
           });
         }
 
