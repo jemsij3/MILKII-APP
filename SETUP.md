@@ -43,13 +43,16 @@ Save these details from your free accounts (never share secrets with anyone):
 
 6. **Check your setup on your phone**
    - Open `https://YOUR-LINK.pages.dev/api/health` in your phone browser.
-   - If `"ok": true` appears, everything is ready.
+   - If `"ok": true` appears, everything is ready (`"ai_models_ok": true` confirms Workers AI is bound).
    - If `"ok": false` appears, read the `"missing"` list and `"hints"` lines, fix those items in Cloudflare **Settings**, and retry the deployment.
 
 7. **Connect your link to your Telegram bot**
    - Open **@BotFather** in Telegram.
    - Send `/setmenubutton`, choose your bot, paste `https://YOUR-LINK.pages.dev`, and set button text to `Open MILKII APP`.
    - Open your bot, press **Start**, and tap the menu button to launch MILKII APP.
+
+8. **Configure AI & payment details inside the app (Owner)**
+   - Open MILKII APP as the Owner (first ID in `TELEGRAM_ADMINS_ID`), tap **Admin > Settings**, enter your real CBE and Telebirr details, and review the **AI** section (ordered model list, translation engine, optional support `@username`, and **Test models**).
 
 ## Common Problems
 
@@ -59,4 +62,4 @@ Save these details from your free accounts (never share secrets with anyone):
 | **Server error** | Open `YOUR-LINK/api/health` in your browser and fix anything shown under `"missing"`, then tap **Retry deployment**. |
 | **Database is not connected** | Go to **Settings > Bindings**, make sure your D1 database `milkii-db` is added with the exact capital name `DB`, then tap **Retry deployment**. |
 | **Admin button missing** | Check `TELEGRAM_ADMINS_ID` in **Settings > Variables and Secrets**. Use your numeric ID from `@userinfobot` with no spaces, then redeploy. |
-| **AI not available** | Go to **Settings > Bindings**, add **Workers AI** with the exact capital name `AI`, then tap **Retry deployment**. |
+| **AI not available / busy** | Go to **Settings > Bindings**, add **Workers AI** with the exact capital name `AI`, tap **Retry deployment**, then use **Admin > Settings > AI > Test models** as Owner. |

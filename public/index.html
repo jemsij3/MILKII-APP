@@ -1292,6 +1292,156 @@
       border-radius: 999px;
       text-transform: uppercase;
     }
+
+    .chat-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .chat-toolbar-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .bubble-group {
+      display: flex;
+      flex-direction: column;
+      max-width: 85%;
+      gap: 3px;
+    }
+
+    .bubble-group.ai {
+      align-self: flex-start;
+    }
+
+    .bubble-group .bubble {
+      max-width: 100%;
+    }
+
+    .bubble-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 0 4px;
+      font-weight: 600;
+    }
+
+    .chat-quick {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 10px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .chat-quick-btn {
+      min-height: 44px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      flex: 1 1 calc(50% - 6px);
+    }
+
+    .chat-quick-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .ai-model-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .ai-model-name {
+      flex: 1;
+      min-width: 140px;
+      font-size: 12px;
+      font-family: monospace;
+      word-break: break-all;
+    }
+
+    .ai-model-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .ai-add-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .ai-test-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .ai-test-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      background: var(--surface-2);
+    }
+
+    .ai-test-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .ai-test-badge-ok {
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .ai-test-badge-fail {
+      background: var(--danger-soft);
+      color: var(--danger);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .ai-test-ans {
+      font-size: 12px;
+      margin-top: 6px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
   </style>
 </head>
 <body>
@@ -1513,7 +1663,37 @@
         settingsOwnerOnlyNote: "Only the owner can change settings.",
         settingsErrFee: "Fees must be integers from 0 to 100000 (Free stays 0).",
         settingsErrLimit: "Limits must be integers from 1 to 1000.",
-        settingsErrPay: "Fill all payment labels, numbers (max 40 chars) and holders (max 60 chars)."
+        settingsErrPay: "Fill all payment labels, numbers (max 40 chars) and holders (max 60 chars).",
+        aiTyping: "Thinking...",
+        aiClearChat: "Clear chat",
+        aiAssistantTitle: "MILKII APP AI",
+        aiQuick1: "How do I post an item?",
+        aiQuick2: "How do paid plans work?",
+        aiQuick3: "How do I contact a seller?",
+        aiQuick4: "Show latest items",
+        aiCooldownWait: "Please wait 2 seconds before sending another message.",
+        aiModelLabel: "Model",
+        actAiTest: "Tested AI models",
+        settingsAiTitle: "AI",
+        settingsAiModelsLabel: "AI models (ordered, 1 to 6)",
+        settingsAiAddPlaceholder: "e.g. @cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        settingsAiAddBtn: "Add",
+        settingsAiUp: "Up",
+        settingsAiDown: "Down",
+        settingsAiRemove: "Remove",
+        settingsAiTranslateEngine: "Translation engine",
+        settingsAiEngineM2m: "m2m100 (fast translator)",
+        settingsAiEngineLlm: "llm (uses model list above)",
+        settingsAiSupportLabel: "Support contact (Telegram @username, optional)",
+        settingsAiSupportPlaceholder: "@support_username",
+        settingsAiTestBtn: "Test models",
+        settingsAiTesting: "Testing models...",
+        settingsAiTestOk: "OK",
+        settingsAiTestFail: "Failed",
+        settingsAiTestNoAnswer: "No reply",
+        settingsErrAiModels: "AI models list must have 1 to 6 valid models.",
+        settingsErrAiModelFormat: "Model must be at most 80 chars and start with @cf/ or @hf/.",
+        settingsErrAiSupport: "Support contact must be empty or a valid Telegram @username."
       },
       om: {
         openFromTg: "Please open MILKII APP from Telegram.",
@@ -1719,7 +1899,37 @@
         settingsOwnerOnlyNote: "Abbaa qabeenyaa qofatu qindaa'ina jijjiiruu danda'a.",
         settingsErrFee: "Gatiin lakkoofsa guutuu 0 hanga 100000 ta'uu qaba (Bilisaa 0 ta'a).",
         settingsErrLimit: "Daangaan lakkoofsa guutuu 1 hanga 1000 ta'uu qaba.",
-        settingsErrPay: "Odeeffannoo kaffaltii hunda sirriitti guutaa."
+        settingsErrPay: "Odeeffannoo kaffaltii hunda sirriitti guutaa.",
+        aiTyping: "Yaadaa jira...",
+        aiClearChat: "Haasaa haqi",
+        aiAssistantTitle: "MILKII APP AI",
+        aiQuick1: "Meeshaa akkamitti maxxansa?",
+        aiQuick2: "Karoorri kaffaltii akkamitti hojjeta?",
+        aiQuick3: "Gurgurtaa akkamitti qunnama?",
+        aiQuick4: "Meeshaalee haaraa naaf agarsiisi",
+        aiCooldownWait: "Ergaa biraa erguu dura sekondii 2 eegaa.",
+        aiModelLabel: "Moodeelii",
+        actAiTest: "Moodeelii AI qore",
+        settingsAiTitle: "AI",
+        settingsAiModelsLabel: "Moodeelota AI (tartiibaan, 1 hanga 6)",
+        settingsAiAddPlaceholder: "fkn. @cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        settingsAiAddBtn: "Dabali",
+        settingsAiUp: "Ol",
+        settingsAiDown: "Gadi",
+        settingsAiRemove: "Haqi",
+        settingsAiTranslateEngine: "Moottora hiikkaa",
+        settingsAiEngineM2m: "m2m100 (hiikkaa saffisaa)",
+        settingsAiEngineLlm: "llm (tarree moodeelotaa olii fayyadama)",
+        settingsAiSupportLabel: "Teessoo gargaarsaa (Telegram @username, dirqama miti)",
+        settingsAiSupportPlaceholder: "@support_username",
+        settingsAiTestBtn: "Moodeelota qori",
+        settingsAiTesting: "Moodeelota qoraa jira...",
+        settingsAiTestOk: "Hojetee jira",
+        settingsAiTestFail: "Hin hojjenne",
+        settingsAiTestNoAnswer: "Deebiin hin jiru",
+        settingsErrAiModels: "Tarreen moodeelota AI 1 hanga 6 qabaachuu qaba.",
+        settingsErrAiModelFormat: "Moodeelli max arfii 80 ta'ee @cf/ ykn @hf/ tiin jalqabuu qaba.",
+        settingsErrAiSupport: "Teessoon gargaarsaa duwwaa ykn Telegram @username sirrii ta'uu qaba."
       },
       am: {
         openFromTg: "Please open MILKII APP from Telegram.",
@@ -1925,7 +2135,37 @@
         settingsOwnerOnlyNote: "ቅንብሮችን መቀየር የሚችለው ባለቤቱ ብቻ ነው።",
         settingsErrFee: "ዋጋዎች ከ0 እስከ 100000 ሙሉ ቁጥር መሆን አለባቸው (ነጻ 0 ነው)።",
         settingsErrLimit: "ገደቦች ከ1 እስከ 1000 ሙሉ ቁጥር መሆን አለባቸው።",
-        settingsErrPay: "ሁሉንም የክፍያ መረጃዎች በትክክል ይሙሉ።"
+        settingsErrPay: "ሁሉንም የክፍያ መረጃዎች በትክክል ይሙሉ።",
+        aiTyping: "በማሰብ ላይ...",
+        aiClearChat: "ውይይቱን አጽዳ",
+        aiAssistantTitle: "MILKII APP AI",
+        aiQuick1: "እቃ እንዴት እለጥፋለሁ?",
+        aiQuick2: "የክፍያ እቅዶች እንዴት ይሰራሉ?",
+        aiQuick3: "ሻጩን እንዴት አገኛለሁ?",
+        aiQuick4: "አዳዲስ እቃዎችን አሳየኝ",
+        aiCooldownWait: "ሌላ መልዕክት ከመላክዎ በፊት 2 ሰከንድ ይጠብቁ።",
+        aiModelLabel: "ሞዴል",
+        actAiTest: "የ AI ሞዴሎችን ሞከረ",
+        settingsAiTitle: "AI",
+        settingsAiModelsLabel: "የ AI ሞዴሎች (በቅደም ተከተል፣ ከ1 እስከ 6)",
+        settingsAiAddPlaceholder: "ምሳሌ፡ @cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        settingsAiAddBtn: "ጨምር",
+        settingsAiUp: "ወደ ላይ",
+        settingsAiDown: "ወደ ታች",
+        settingsAiRemove: "አስወግድ",
+        settingsAiTranslateEngine: "የትርጉም ሞተር",
+        settingsAiEngineM2m: "m2m100 (ፈጣን ተርጓሚ)",
+        settingsAiEngineLlm: "llm (ከላይ ያለውን የሞዴል ዝርዝር ይጠቀማል)",
+        settingsAiSupportLabel: "የድጋፍ አድራሻ (Telegram @username፣ አማራጭ)",
+        settingsAiSupportPlaceholder: "@support_username",
+        settingsAiTestBtn: "ሞዴሎችን ሞክር",
+        settingsAiTesting: "ሞዴሎችን በመሞከር ላይ...",
+        settingsAiTestOk: "ሰርቷል",
+        settingsAiTestFail: "አልሰራም",
+        settingsAiTestNoAnswer: "መልስ የለም",
+        settingsErrAiModels: "የ AI ሞዴሎች ዝርዝር ከ1 እስከ 6 ትክክለኛ ሞዴሎች ሊኖሩት ይገባል።",
+        settingsErrAiModelFormat: "ሞዴሉ ከ80 ፊደል ያልበለጠ እና በ @cf/ ወይም @hf/ መጀመር አለበት።",
+        settingsErrAiSupport: "የድጋፍ አድራሻ ባዶ ወይም ትክክለኛ Telegram @username መሆን አለበት።"
       }
     };
 
@@ -1989,6 +2229,11 @@
         saved: loadSavedItems(),
         aiMessages: [],
         aiBusy: false,
+        aiLastReqAt: 0,
+        aiNewModelInput: "",
+        aiTesting: false,
+        aiTestResults: null,
+        aiTestError: "",
         post: createEmptyPost(savedLang === "om" || savedLang === "am" ? savedLang : "en")
       };
 
@@ -2791,7 +3036,8 @@
           user_ban: t("actUserBan"),
           user_unban: t("actUserUnban"),
           settings_update: t("actSettingsUpdate"),
-          receipt_view: t("actReceiptView")
+          receipt_view: t("actReceiptView"),
+          ai_test: t("actAiTest")
         };
         return map[action] || action;
       }
@@ -2917,6 +3163,82 @@
             </div>
           </div>
 
+          <div class="section-card">
+            <h3 class="section-title">${esc(t("settingsAiTitle"))}</h3>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("settingsAiModelsLabel"))}</span></label>
+              <div>
+                ${(Array.isArray(s.ai?.models) ? s.ai.models : [])
+                  .map(
+                    (m, idx, arr) => `
+                      <div class="ai-model-row">
+                        <span class="ai-model-name">${idx + 1}. ${esc(m)}</span>
+                        <div class="ai-model-actions">
+                          <button type="button" class="btn btn-sm" data-ai-up="${idx}" ${!isOwner || idx === 0 ? "disabled" : ""}>${esc(t("settingsAiUp"))}</button>
+                          <button type="button" class="btn btn-sm" data-ai-down="${idx}" ${!isOwner || idx === arr.length - 1 ? "disabled" : ""}>${esc(t("settingsAiDown"))}</button>
+                          <button type="button" class="btn btn-sm btn-danger" data-ai-remove="${idx}" ${!isOwner || arr.length <= 1 ? "disabled" : ""}>${esc(t("settingsAiRemove"))}</button>
+                        </div>
+                      </div>
+                    `
+                  )
+                  .join("")}
+              </div>
+              ${
+                isOwner
+                  ? `<div class="ai-add-row">
+                       <input id="setAiNewModel" class="input" type="text" maxlength="80" placeholder="${esc(t("settingsAiAddPlaceholder"))}" value="${esc(state.aiNewModelInput)}" ${Array.isArray(s.ai?.models) && s.ai.models.length >= 6 ? "disabled" : ""} />
+                       <button type="button" id="addAiModelBtn" class="btn btn-sm btn-primary" ${Array.isArray(s.ai?.models) && s.ai.models.length >= 6 ? "disabled" : ""}>${esc(t("settingsAiAddBtn"))}</button>
+                     </div>`
+                  : ""
+              }
+            </div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("settingsAiTranslateEngine"))}</span></label>
+              <select id="setAiEngine" class="select" ${dis}>
+                <option value="m2m100"${s.ai?.translate_engine !== "llm" ? " selected" : ""}>${esc(t("settingsAiEngineM2m"))}</option>
+                <option value="llm"${s.ai?.translate_engine === "llm" ? " selected" : ""}>${esc(t("settingsAiEngineLlm"))}</option>
+              </select>
+            </div>
+            <div class="field-group" style="margin-bottom:${isOwner ? "12px" : "0"};">
+              <label class="field-label"><span>${esc(t("settingsAiSupportLabel"))}</span></label>
+              <input id="setAiSupport" class="input" type="text" maxlength="40" placeholder="${esc(t("settingsAiSupportPlaceholder"))}" value="${esc(s.ai?.support_username || "")}" ${dis} />
+            </div>
+            ${
+              isOwner
+                ? `<button type="button" id="testAiModelsBtn" class="btn" style="width:100%;" ${state.aiTesting || state.settingsSaving ? "disabled" : ""}>${esc(state.aiTesting ? t("settingsAiTesting") : t("settingsAiTestBtn"))}</button>`
+                : ""
+            }
+            ${state.aiTestError ? `<div class="field-error" style="margin-top:8px;">${esc(state.aiTestError)}</div>` : ""}
+            ${
+              Array.isArray(state.aiTestResults) && state.aiTestResults.length
+                ? `<div class="ai-test-list">
+                     ${state.aiTestResults
+                       .map(
+                         (r) => `
+                           <div class="ai-test-card">
+                             <div class="ai-test-head">
+                               <strong style="font-size:12px;font-family:monospace;word-break:break-all;">${esc(r.model)}</strong>
+                               <div style="display:flex;gap:6px;align-items:center;">
+                                 <span class="${r.ok ? "ai-test-badge-ok" : "ai-test-badge-fail"}">${esc(r.ok ? t("settingsAiTestOk") : t("settingsAiTestFail"))}</span>
+                                 <span style="font-size:11px;color:var(--text-muted);font-weight:700;">${esc(r.ms)} ms</span>
+                               </div>
+                             </div>
+                             ${(Array.isArray(r.answers) ? r.answers : [])
+                               .map(
+                                 (a) => `
+                                   <div class="ai-test-ans"><strong>${esc(String(a.lang || "").toUpperCase())}:</strong> ${esc(a.text || t("settingsAiTestNoAnswer"))}</div>
+                                 `
+                               )
+                               .join("")}
+                           </div>
+                         `
+                       )
+                       .join("")}
+                   </div>`
+                : ""
+            }
+          </div>
+
           ${state.settingsError ? `<div class="field-error" style="margin-bottom:10px;">${esc(state.settingsError)}</div>` : ""}
           ${
             isOwner
@@ -2963,20 +3285,41 @@
 
       function renderAiView() {
         const msgs = state.aiMessages.length
-          ? state.aiMessages
+          ? state.aiMessages.slice(-10)
           : [{ role: "assistant", content: t("aiWelcome") }];
+        const isAdmin = Boolean(state.me && state.me.isAdmin);
+        const quickQs = [t("aiQuick1"), t("aiQuick2"), t("aiQuick3"), t("aiQuick4")];
         return `
           <main class="content">
             <div class="chat-wrap">
+              <div class="chat-toolbar">
+                <span class="chat-toolbar-title">🤖 ${esc(t("aiAssistantTitle"))}</span>
+                <button type="button" id="aiClearBtn" class="btn btn-sm" ${state.aiBusy ? "disabled" : ""}>${esc(t("aiClearChat"))}</button>
+              </div>
               <div id="chatLog" class="chat-log">
                 ${msgs
-                  .map(
-                    (m) => `
-                      <div class="bubble ${m.role === "user" ? "bubble-user" : "bubble-ai"}">${esc(m.content)}</div>
-                    `
+                  .map((m) =>
+                    m.role === "user"
+                      ? `<div class="bubble bubble-user">${esc(m.content)}</div>`
+                      : `<div class="bubble-group ai">
+                           <div class="bubble bubble-ai">${esc(m.content)}</div>
+                           ${isAdmin && m.model ? `<div class="bubble-meta">${esc(t("aiModelLabel"))}: ${esc(m.model)}</div>` : ""}
+                         </div>`
                   )
                   .join("")}
-                ${state.aiBusy ? `<div class="bubble bubble-ai">...</div>` : ""}
+                ${
+                  state.aiBusy
+                    ? `<div class="bubble-group ai"><div class="bubble bubble-ai">${esc(t("aiTyping"))}</div></div>`
+                    : ""
+                }
+              </div>
+              <div class="chat-quick">
+                ${quickQs
+                  .map(
+                    (q) =>
+                      `<button type="button" class="chat-quick-btn" data-ai-quick="${esc(q)}" ${state.aiBusy ? "disabled" : ""}>${esc(q)}</button>`
+                  )
+                  .join("")}
               </div>
               <form id="aiForm" class="chat-form">
                 <input id="aiInput" class="input" type="text" maxlength="500" placeholder="${esc(t("aiPlaceholder"))}" ${state.aiBusy ? "disabled" : ""} />
@@ -3747,7 +4090,7 @@
         document.getElementById("dlgClose").onclick = closeAndRevoke;
         try {
           const res = await fetch(`/api/admin/receipt/${itemId}`, {
-            headers: { "X-Init-Data": initData }
+            headers: { "X-Init-Data": initData, "X-Lang": state.lang }
           });
           if (!res.ok) throw new Error("Could not load receipt");
           const blob = await res.blob();
@@ -4326,11 +4669,54 @@
           state.settingsError = t("settingsErrLimit");
           return null;
         }
+        const aiCfg = s.ai || {};
+        const rawModels = Array.isArray(aiCfg.models) ? aiCfg.models : [];
+        if (rawModels.length < 1 || rawModels.length > 6) {
+          state.settingsError = t("settingsErrAiModels");
+          return null;
+        }
+        const cleanModels = [];
+        const seenModels = new Set();
+        for (const rawM of rawModels) {
+          const m = String(rawM || "").trim();
+          if (
+            !m ||
+            m.length > 80 ||
+            !/^(@cf|@hf)\/[A-Za-z0-9._/-]+$/.test(m)
+          ) {
+            state.settingsError = t("settingsErrAiModelFormat");
+            return null;
+          }
+          if (!seenModels.has(m)) {
+            seenModels.add(m);
+            cleanModels.push(m);
+          }
+        }
+        if (cleanModels.length < 1 || cleanModels.length > 6) {
+          state.settingsError = t("settingsErrAiModels");
+          return null;
+        }
+        const translateEngine = aiCfg.translate_engine === "llm" ? "llm" : "m2m100";
+        const rawSup = String(aiCfg.support_username || "").trim();
+        let cleanSup = "";
+        if (rawSup) {
+          const stripped = rawSup.replace(/^@/, "");
+          if (!/^[A-Za-z0-9_]{5,32}$/.test(stripped)) {
+            state.settingsError = t("settingsErrAiSupport");
+            return null;
+          }
+          cleanSup = "@" + stripped;
+        }
         state.settingsError = "";
         return {
           plans: { free: 0, standard: std, featured: feat },
           payment: { CBE: cbe, Telebirr: tb },
-          limits: { max_pending: mp, ai_daily: ai, upload_daily: up }
+          limits: { max_pending: mp, ai_daily: ai, upload_daily: up },
+          ai: {
+            models: cleanModels,
+            translate_engine: translateEngine,
+            support_username: cleanSup
+          }
         };
       }
 
@@ -4648,6 +5034,90 @@
           bindSetInput("setLimPending", (v) => { state.settingsDraft.limits.max_pending = v; });
           bindSetInput("setLimAi", (v) => { state.settingsDraft.limits.ai_daily = v; });
           bindSetInput("setLimUpload", (v) => { state.settingsDraft.limits.upload_daily = v; });
+          if (!state.settingsDraft.ai) {
+            state.settingsDraft.ai = { models: [], translate_engine: "m2m100", support_username: "" };
+          }
+          bindSetInput("setAiSupport", (v) => { state.settingsDraft.ai.support_username = v; });
+          bindSetInput("setAiNewModel", (v) => { state.aiNewModelInput = v; });
+          const setAiEngine = document.getElementById("setAiEngine");
+          if (setAiEngine) {
+            setAiEngine.addEventListener("change", () => {
+              state.settingsDraft.ai.translate_engine = setAiEngine.value === "llm" ? "llm" : "m2m100";
+            });
+          }
+          document.querySelectorAll("[data-ai-up]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const idx = Number(btn.getAttribute("data-ai-up"));
+              const arr = state.settingsDraft.ai.models;
+              if (idx > 0 && idx < arr.length) {
+                [arr[idx - 1], arr[idx]] = [arr[idx], arr[idx - 1]];
+                renderApp();
+              }
+            });
+          });
+          document.querySelectorAll("[data-ai-down]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const idx = Number(btn.getAttribute("data-ai-down"));
+              const arr = state.settingsDraft.ai.models;
+              if (idx >= 0 && idx < arr.length - 1) {
+                [arr[idx], arr[idx + 1]] = [arr[idx + 1], arr[idx]];
+                renderApp();
+              }
+            });
+          });
+          document.querySelectorAll("[data-ai-remove]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const idx = Number(btn.getAttribute("data-ai-remove"));
+              const arr = state.settingsDraft.ai.models;
+              if (arr.length > 1 && idx >= 0 && idx < arr.length) {
+                arr.splice(idx, 1);
+                renderApp();
+              }
+            });
+          });
+          const addAiModelBtn = document.getElementById("addAiModelBtn");
+          if (addAiModelBtn) {
+            addAiModelBtn.addEventListener("click", () => {
+              const arr = state.settingsDraft.ai.models;
+              if (arr.length >= 6) return;
+              const m = String(state.aiNewModelInput || "").trim();
+              if (
+                !m ||
+                m.length > 80 ||
+                !/^(@cf|@hf)\/[A-Za-z0-9._/-]+$/.test(m)
+              ) {
+                state.settingsError = t("settingsErrAiModelFormat");
+                renderApp();
+                return;
+              }
+              if (!arr.includes(m)) {
+                arr.push(m);
+              }
+              state.aiNewModelInput = "";
+              state.settingsError = "";
+              renderApp();
+            });
+          }
+          const testAiModelsBtn = document.getElementById("testAiModelsBtn");
+          if (testAiModelsBtn) {
+            testAiModelsBtn.addEventListener("click", async () => {
+              if (state.aiTesting) return;
+              state.aiTesting = true;
+              state.aiTestError = "";
+              state.aiTestResults = null;
+              renderApp();
+              try {
+                const res = await api("/api/admin/ai-test", { method: "POST" });
+                state.aiTestResults = Array.isArray(res) ? res : (Array.isArray(res?.results) ? res.results : []);
+              } catch (e) {
+                state.aiTestError = e.message || "Request failed";
+                showToast(state.aiTestError);
+              } finally {
+                state.aiTesting = false;
+                renderApp();
+              }
+            });
+          }
         }
 
         const saveSettingsBtn = document.getElementById("saveSettingsBtn");
@@ -4681,30 +5151,73 @@
           });
         }
 
+        async function sendAiMessage(rawText) {
+          if (state.aiBusy) return;
+          const text = String(rawText || "").trim();
+          if (!text) return;
+          const nowMs = Date.now();
+          if (nowMs - state.aiLastReqAt < 2000) {
+            showToast(t("aiCooldownWait"));
+            return;
+          }
+          state.aiLastReqAt = nowMs;
+          state.aiMessages.push({ role: "user", content: text });
+          if (state.aiMessages.length > 10) {
+            state.aiMessages = state.aiMessages.slice(-10);
+          }
+          state.aiBusy = true;
+          renderApp();
+          try {
+            const res = await api("/api/ai", {
+              method: "POST",
+              body: JSON.stringify({ task: "chat", messages: state.aiMessages.slice(-10) })
+            });
+            state.aiMessages.push({
+              role: "assistant",
+              content: res.text,
+              model: res.model || ""
+            });
+          } catch (err) {
+            state.aiMessages.push({ role: "assistant", content: err.message });
+          } finally {
+            if (state.aiMessages.length > 10) {
+              state.aiMessages = state.aiMessages.slice(-10);
+            }
+            state.aiBusy = false;
+            renderApp();
+            const log = document.getElementById("chatLog");
+            if (log) log.scrollTop = log.scrollHeight;
+          }
+        }
+
+        const aiClearBtn = document.getElementById("aiClearBtn");
+        if (aiClearBtn) {
+          aiClearBtn.addEventListener("click", () => {
+            if (state.aiBusy) return;
+            state.aiMessages = [];
+            renderApp();
+          });
+        }
+
+        document.querySelectorAll("[data-ai-quick]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            sendAiMessage(btn.getAttribute("data-ai-quick"));
+          });
+        });
+
         const aiForm = document.getElementById("aiForm");
         if (aiForm) {
-          aiForm.addEventListener("submit", async (e) => {
+          aiForm.addEventListener("submit", (e) => {
             e.preventDefault();
-            if (state.aiBusy) return;
             const input = document.getElementById("aiInput");
-            const text = input.value.trim();
-            if (!text) return;
-            state.aiMessages.push({ role: "user", content: text });
-            state.aiBusy = true;
-            renderApp();
-            try {
-              const res = await api("/api/ai", {
-                method: "POST",
-                body: JSON.stringify({ task: "chat", messages: state.aiMessages })
-              });
-              state.aiMessages.push({ role: "assistant", content: res.text });
-            } catch (err) {
-              state.aiMessages.push({ role: "assistant", content: err.message });
-            } finally {
-              state.aiBusy = false;
-              renderApp();
-            }
+            if (!input) return;
+            sendAiMessage(input.value);
           });
+        }
+
+        if (state.view === "ai") {
+          const log = document.getElementById("chatLog");
+          if (log) log.scrollTop = log.scrollHeight;
         }
 
         const postDoneBtn = document.getElementById("postDoneBtn");

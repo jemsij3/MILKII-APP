@@ -210,8 +210,13 @@ Plan fees, payment account details, and usage limits are stored in the D1 `setti
   - Max pending items per seller (default `10`, range `1–1000`)
   - Daily AI requests per user (default `30`, range `1–1000`)
   - Daily uploads per user (default `100`, range `1–1000`)
+- **AI:**
+  - **Ordered model list (1–6 models):** Tried in order with a 20-second timeout per model (Cloudflare Workers AI `@cf/...` or `@hf/...`). Defaults to 6 Cloudflare Workers AI models.
+  - **Translation engine:** `m2m100` (default, fast translator for English/Amharic) or `llm` (uses the ordered model list, automatically used for Afaan Oromoo and as fallback).
+  - **Support contact:** Optional Telegram `@username` shared by the assistant when users need help.
+  - **Test models (Owner only):** Runs each configured model on English, Afaan Oromoo, and Amharic test questions via `POST /api/admin/ai-test` (up to 5 tests per day, logged to Audit).
 
-Non-owner admins can view the **Settings** screen, but only an Owner can save changes.
+Non-owner admins can view the **Settings** screen (including AI configuration) and see which AI model answered in chat, but only an Owner can edit Settings or run model tests.
 
 ## Security
 
@@ -248,7 +253,7 @@ Non-owner admins can view the **Settings** screen, but only an Owner can save ch
 | `"Please open MILKII APP from Telegram."` appears in a web browser | The page was opened outside Telegram, so `Telegram.WebApp.initData` is empty | Open the app from your Telegram bot's Menu Button or Mini App link |
 | Blank page after deploying to Cloudflare Pages | **Build output directory** was not set to `public` or a build command ran | Set **Build command** to empty and **Build output directory** to `public`, then redeploy |
 | `"Server error"` or failed API calls when loading the app | The D1 binding `DB` is missing or named wrong | Bind `milkii-db` to variable name `DB` (all caps) in **Settings > Bindings** and redeploy (tables are created automatically) |
-| `"AI is not available right now"` | The Workers AI binding named `AI` is missing or the model name in the code is not in the Cloudflare model list | Go to Cloudflare dashboard > **Workers & Pages** > your project > **Settings > Bindings > Add > Workers AI**, set variable name to `AI` (capital letters), check `TRANSLATE_MODEL` / `CHAT_MODEL` in `functions/api/[[route]].js`, and redeploy |
+| `"The assistant is busy"` or `"AI is not available right now"` | The Workers AI binding named `AI` is missing or all configured models timed out / failed | Go to Cloudflare dashboard > **Workers & Pages** > your project > **Settings > Bindings > Add > Workers AI**, set variable name to `AI` (capital letters), redeploy, and use **Admin > Settings > AI > Test models** (as Owner) to check or reorder models |
 | **Admin** button does not appear | Your Telegram ID is missing from `TELEGRAM_ADMINS_ID`, or has spaces/typos | Confirm your numeric ID with `@userinfobot`, add it to `TELEGRAM_ADMINS_ID`, and redeploy |
 | Video upload is rejected | Video is longer than 10 seconds, larger than 30 MB, or not MP4/MOV/WEBM | Trim the video to 10 seconds or less and keep file size under 30 MB |
 | Notifications do not arrive in Telegram | The user or admin never pressed **Start** in the bot or did not allow messages (`can_dm = 0`), or `TELEGRAM_BOT_TOKEN` is wrong | Press **Start** in the bot chat, tap **Allow** if asked for write access, reopen MILKII APP, and check `TELEGRAM_BOT_TOKEN` |
