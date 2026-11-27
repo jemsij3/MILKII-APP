@@ -102,7 +102,7 @@ You need free accounts on these services:
 ### 2. Find your Telegram user ID
 1. Open Telegram and search for **@userinfobot**.
 2. Press **Start** (or send any message).
-3. Copy your numeric **Id** (for example `123456789`). You will put this into `ADMIN_IDS` and `OWNER_IDS`.
+3. Copy your numeric **Id** (for example `123456789`). You will put this into `TELEGRAM_ADMINS_ID`.
 
 ### 3. Create a Cloudinary account
 1. Sign up for a free account at Cloudinary.
@@ -148,7 +148,7 @@ You need free accounts on these services:
 
 ### 8. Add environment variables and redeploy
 1. Stay in your Pages project and open **Settings > Variables and Secrets** (or **Settings > Environment variables**).
-2. Add all 6 variables listed in Section 9 (**Environment Variables**) for **Production**.
+2. Add the variables and secrets listed in Section 9 (**Environment Variables**) for **Production**.
 3. Go to the **Deployments** tab, click the three-dot menu on the latest deployment, and click **Retry deployment** so the new bindings and variables take effect.
 
 ### 9. Connect the Mini App to your Telegram bot
@@ -162,19 +162,20 @@ You need free accounts on these services:
 
 ## Environment Variables
 
-Add these variables in Cloudflare Pages under **Settings > Variables and Secrets**. Never put them in GitHub or `public/index.html`.
+Add these variables and secrets in Cloudflare Pages under **Settings > Variables and Secrets**. (Cloudflare requires underscores `_` instead of spaces.) Never put secrets in GitHub or `public/index.html`.
 
 | Name | Where to get it | Secret? | What it is for |
 | --- | --- | --- | --- |
-| `BOT_TOKEN` | **@BotFather** in Telegram (`YOUR_BOT_TOKEN`) | Yes | Verifies Telegram user logins on the server and sends Telegram notifications |
-| `ADMIN_IDS` | **@userinfobot** in Telegram (for example `123456789,987654321`) | No | Comma-separated Telegram user IDs that get Admin access |
-| `OWNER_IDS` | **@userinfobot** in Telegram (for example `123456789`) | No | Comma-separated Telegram user IDs that get Owner access (and Admin access) |
+| `TELEGRAM_BOT_TOKEN` | **@BotFather** in Telegram (`YOUR_BOT_TOKEN`) | Yes | Verifies Telegram user logins on the server and sends Telegram notifications |
+| `TELEGRAM_ADMINS_ID` | **@userinfobot** in Telegram (for example `123456789,987654321`) | No | Comma-separated Telegram user IDs that get Admin access |
 | `CLOUDINARY_CLOUD_NAME` | Cloudinary Dashboard (`YOUR_CLOUD_NAME`) | No | Identifies your Cloudinary storage account for uploads and image URLs |
 | `CLOUDINARY_API_KEY` | Cloudinary Dashboard (`YOUR_API_KEY`) | No (keep server-only in env vars) | Signs upload and verification requests to Cloudinary |
 | `CLOUDINARY_API_SECRET` | Cloudinary Dashboard (`YOUR_API_SECRET`) | Yes | Secret key used on the server to sign uploads and verify/delete media |
+| `JWT_SECRET` | Generate a long random string | Yes | Signs and verifies optional HS256 session tokens issued by `/api/me` |
+| `TELEGRAM_WEBHOOK_SECRET` | Generate a long random string | Yes | Verifies Telegram Bot API webhook requests at `POST /api/webhook` via `X-Telegram-Bot-Api-Secret-Token` |
 
 - **Multiple IDs:** Separate multiple Telegram IDs with commas and no spaces needed (for example `111222333,444555666`).
-- **If `OWNER_IDS` is not set:** The **first** ID listed in `ADMIN_IDS` automatically becomes the Owner. Every Owner also has all Admin permissions.
+- **Owner role:** The **first** ID listed in `TELEGRAM_ADMINS_ID` automatically becomes the Owner (unless optional `OWNER_IDS` is also set). Every Owner also has all Admin permissions.
 
 ## First Test Checklist
 
@@ -214,10 +215,10 @@ Non-owner admins can view the **Settings** screen, but only an Owner can save ch
 
 ## Security
 
-- **Telegram login is verified on the server:** Every API request sends Telegram `initData` in a header, and the backend verifies its HMAC-SHA256 signature using `BOT_TOKEN` and rejects expired logins (older than 24 hours).
-- **Admin and Owner rights are checked on the server:** Every `/api/admin/*` endpoint verifies `ADMIN_IDS` and `OWNER_IDS` on the server. The browser cannot grant itself admin or owner access.
-- **Never put secrets in GitHub or `public/index.html`:** Keep `BOT_TOKEN` and `CLOUDINARY_API_SECRET` only in Cloudflare Pages environment variables. No external AI API key is needed because AI runs through Cloudflare's `AI` binding.
-- **Never share `BOT_TOKEN`:** Anyone with your Bot Token can control your bot and forge user logins.
+- **Telegram login is verified on the server:** Every API request sends Telegram `initData` in a header (or an optional signed Bearer JWT when `JWT_SECRET` is configured), and the backend verifies its HMAC-SHA256 signature using `TELEGRAM_BOT_TOKEN` and rejects expired logins (older than 24 hours).
+- **Admin and Owner rights are checked on the server:** Every `/api/admin/*` endpoint verifies `TELEGRAM_ADMINS_ID` (and optional `OWNER_IDS`) on the server. The browser cannot grant itself admin or owner access.
+- **Never put secrets in GitHub or `public/index.html`:** Keep `TELEGRAM_BOT_TOKEN`, `CLOUDINARY_API_SECRET`, `JWT_SECRET`, and `TELEGRAM_WEBHOOK_SECRET` only in Cloudflare Pages Secrets. No external AI API key is needed because AI runs through Cloudflare's `AI` binding.
+- **Never share `TELEGRAM_BOT_TOKEN`:** Anyone with your Bot Token can control your bot and forge user logins.
 - **Ban rules:** Banned users cannot upload files or create listings. Banning a user immediately deletes all of their items and removes their uploaded photos/videos from Cloudinary. Admins and Owners can never be banned.
 - **Upload and data limits:** The backend verifies every uploaded file directly against Cloudinary (folder `milkii/items/<user_id>/`, max 10 MB images, max 30 MB and 10s videos) before saving a listing, and rejects malformed receipt images.
 
@@ -248,9 +249,9 @@ Non-owner admins can view the **Settings** screen, but only an Owner can save ch
 | Blank page after deploying to Cloudflare Pages | **Build output directory** was not set to `public` or a build command ran | Set **Build command** to empty and **Build output directory** to `public`, then redeploy |
 | `"Server error"` or failed API calls when loading the app | The D1 binding `DB` is missing or named wrong | Bind `milkii-db` to variable name `DB` (all caps) in **Settings > Bindings** and redeploy (tables are created automatically) |
 | `"AI is not available right now"` | The Workers AI binding named `AI` is missing or the model name in the code is not in the Cloudflare model list | Go to Cloudflare dashboard > **Workers & Pages** > your project > **Settings > Bindings > Add > Workers AI**, set variable name to `AI` (capital letters), check `TRANSLATE_MODEL` / `CHAT_MODEL` in `functions/api/[[route]].js`, and redeploy |
-| **Admin** button does not appear | Your Telegram ID is missing from `ADMIN_IDS` (and `OWNER_IDS`), or has spaces/typos | Confirm your numeric ID with `@userinfobot`, add it to `ADMIN_IDS`, and redeploy |
+| **Admin** button does not appear | Your Telegram ID is missing from `TELEGRAM_ADMINS_ID`, or has spaces/typos | Confirm your numeric ID with `@userinfobot`, add it to `TELEGRAM_ADMINS_ID`, and redeploy |
 | Video upload is rejected | Video is longer than 10 seconds, larger than 30 MB, or not MP4/MOV/WEBM | Trim the video to 10 seconds or less and keep file size under 30 MB |
-| Notifications do not arrive in Telegram | The user or admin never pressed **Start** in the bot or did not allow messages (`can_dm = 0`), or `BOT_TOKEN` is wrong | Press **Start** in the bot chat, tap **Allow** if asked for write access, reopen MILKII APP, and check `BOT_TOKEN` |
+| Notifications do not arrive in Telegram | The user or admin never pressed **Start** in the bot or did not allow messages (`can_dm = 0`), or `TELEGRAM_BOT_TOKEN` is wrong | Press **Start** in the bot chat, tap **Allow** if asked for write access, reopen MILKII APP, and check `TELEGRAM_BOT_TOKEN` |
 | Photos or videos fail to upload | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, or `CLOUDINARY_API_SECRET` is missing or wrong | Check all three Cloudinary variables in Cloudflare Pages and redeploy |
 | Paid plans cannot be submitted in Step 5 | The Owner has not configured real CBE/Telebirr numbers and holder names yet | Open **Admin > Settings** as Owner and save valid CBE and Telebirr payment details |
 | Seller sees `"You need a Telegram username"` | The seller's Telegram account does not have a `@username` set | Set a username in Telegram **Settings > Username**, then reopen MILKII APP |
@@ -269,7 +270,7 @@ Non-owner admins can view the **Settings** screen, but only an Owner can save ch
 No. If opened outside Telegram, it stops and shows `"Please open MILKII APP from Telegram."` because user login and verification depend on Telegram's `initData`.
 
 **2. Can I add another Admin or Owner?**
-Yes. Get their numeric Telegram ID from `@userinfobot`, add it after a comma in `ADMIN_IDS` (or `OWNER_IDS` for Owners) in Cloudflare Pages environment variables, and redeploy.
+Yes. Get their numeric Telegram ID from `@userinfobot`, add it after a comma in `TELEGRAM_ADMINS_ID` (or optional `OWNER_IDS`) in Cloudflare Pages environment variables, and redeploy.
 
 **3. Where are photos, videos, and payment receipts stored?**
 Item photos and videos are stored on **Cloudinary** inside `milkii/items/<user_id>/`. Listing text, settings, audit logs, users, and compressed payment receipt screenshots are stored in **Cloudflare D1**.
@@ -280,5 +281,5 @@ Yes. Open **Admin > Settings** as the Owner inside MILKII APP, update the prices
 **5. Why can't I delete entries from the Audit log?**
 The Audit log is intentionally append-only in the database and backend API so there is always an honest record of admin and owner actions.
 
-**6. What happens if I leave `OWNER_IDS` empty?**
-If `OWNER_IDS` is empty, the first Telegram ID listed in `ADMIN_IDS` automatically gets Owner permissions.
+**6. How is the Owner chosen?**
+The **first** Telegram ID listed in `TELEGRAM_ADMINS_ID` automatically gets Owner permissions (unless you also set optional `OWNER_IDS`).

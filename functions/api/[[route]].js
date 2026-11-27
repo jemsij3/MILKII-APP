@@ -872,9 +872,87 @@ function parseIdList(raw) {
   return { list, set };
 }
 
+function getBotToken(env) {
+  return String((env && (env.TELEGRAM_BOT_TOKEN || env.BOT_TOKEN)) || "").trim();
+}
+
+function getWebhookSecret(env) {
+  return String((env && env.TELEGRAM_WEBHOOK_SECRET) || "").trim();
+}
+
+function getJwtSecret(env) {
+  return String((env && env.JWT_SECRET) || "").trim();
+}
+
+function base64UrlEncodeBytes(bytes) {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) {
+    bin += String.fromCharCode(bytes[i]);
+  }
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function base64UrlEncodeText(text) {
+  return base64UrlEncodeBytes(encoder.encode(text));
+}
+
+function base64UrlDecodeText(b64u) {
+  if (typeof b64u !== "string" || !/^[A-Za-z0-9_-]+$/.test(b64u)) return null;
+  const pad = b64u.length % 4 === 0 ? "" : "=".repeat(4 - (b64u.length % 4));
+  const b64 = b64u.replace(/-/g, "+").replace(/_/g, "/") + pad;
+  try {
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) {
+      bytes[i] = bin.charCodeAt(i);
+    }
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return null;
+  }
+}
+
+async function signJwt(payload, secret) {
+  if (!secret) return null;
+  const headerB64 = base64UrlEncodeText(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+  const payloadB64 = base64UrlEncodeText(JSON.stringify(payload));
+  const signingInput = `${headerB64}.${payloadB64}`;
+  const sigBuf = await hmacSha256(encoder.encode(secret), signingInput);
+  const sigB64 = base64UrlEncodeBytes(new Uint8Array(sigBuf));
+  return `${signingInput}.${sigB64}`;
+}
+
+async function verifyJwt(token, env) {
+  const secret = getJwtSecret(env);
+  if (!secret || typeof token !== "string") return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [headerB64, payloadB64, sigB64] = parts;
+  const headerJson = safeJsonParse(base64UrlDecodeText(headerB64), null);
+  if (!headerJson || headerJson.alg !== "HS256") return null;
+  const expectedBuf = await hmacSha256(encoder.encode(secret), `${headerB64}.${payloadB64}`);
+  const expectedB64 = base64UrlEncodeBytes(new Uint8Array(expectedBuf));
+  if (!timingSafeEqualHex(expectedB64, sigB64)) return null;
+  const payload = safeJsonParse(base64UrlDecodeText(payloadB64), null);
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (!payload || !payload.sub || !Number.isFinite(payload.exp) || nowSec >= payload.exp) {
+    return null;
+  }
+  const id = String(payload.sub);
+  const { adminSet, ownerSet } = getRoleSets(env);
+  return {
+    id,
+    username: typeof payload.username === "string" ? payload.username : "",
+    firstName: typeof payload.firstName === "string" ? payload.firstName : "",
+    canDm: payload.canDm ? 1 : 0,
+    isAdmin: adminSet.has(id),
+    isOwner: ownerSet.has(id)
+  };
+}
+
 function getRoleSets(env) {
-  const adminsParsed = parseIdList(env.ADMIN_IDS);
-  const ownersParsed = parseIdList(env.OWNER_IDS);
+  const adminsParsed = parseIdList((env && (env.TELEGRAM_ADMINS_ID || env.ADMIN_IDS)) || "");
+  const ownersParsed = parseIdList((env && env.OWNER_IDS) || "");
 
   const ownerSet = new Set(ownersParsed.list);
   if (ownerSet.size === 0 && adminsParsed.list.length > 0) {
@@ -893,7 +971,8 @@ async function verifyTelegramInitData(initData, env) {
   if (!initData || typeof initData !== "string") {
     return null;
   }
-  if (!env.BOT_TOKEN) {
+  const botToken = getBotToken(env);
+  if (!botToken) {
     return null;
   }
 
@@ -915,7 +994,7 @@ async function verifyTelegramInitData(initData, env) {
   );
   const dataCheckString = pairs.map(([k, v]) => `${k}=${v}`).join("\n");
 
-  const secretKeyBuf = await hmacSha256(encoder.encode("WebAppData"), env.BOT_TOKEN);
+  const secretKeyBuf = await hmacSha256(encoder.encode("WebAppData"), botToken);
   const computedBuf = await hmacSha256(secretKeyBuf, dataCheckString);
   const computedHex = toHex(computedBuf);
 
@@ -951,6 +1030,21 @@ async function verifyTelegramInitData(initData, env) {
     isAdmin: adminSet.has(id),
     isOwner: ownerSet.has(id)
   };
+}
+
+async function authenticateRequest(request, env) {
+  const initData = request.headers.get("X-Init-Data") || "";
+  if (initData) {
+    return verifyTelegramInitData(initData, env);
+  }
+  const authHeader = request.headers.get("Authorization") || "";
+  if (authHeader.startsWith("Bearer ")) {
+    const token = authHeader.slice(7).trim();
+    if (token) {
+      return verifyJwt(token, env);
+    }
+  }
+  return null;
 }
 
 function parseHeaderLang(request) {
@@ -1132,9 +1226,10 @@ function safeWaitUntil(context, promise) {
 }
 
 async function sendTelegramMessage(env, chatId, text) {
-  if (!env.BOT_TOKEN || !chatId || !text) return;
+  const botToken = getBotToken(env);
+  if (!botToken || !chatId || !text) return;
   try {
-    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1148,7 +1243,7 @@ async function sendTelegramMessage(env, chatId, text) {
 }
 
 async function notifyAdmins(env, text) {
-  if (!env.BOT_TOKEN || !text) return;
+  if (!getBotToken(env) || !text) return;
   try {
     const { adminSet } = getRoleSets(env);
     const ids = Array.from(adminSet);
@@ -1166,7 +1261,7 @@ async function notifyAdmins(env, text) {
 }
 
 async function notifySeller(env, userId, kind, args = []) {
-  if (!env.BOT_TOKEN || !userId) return;
+  if (!getBotToken(env) || !userId) return;
   try {
     const row = await env.DB.prepare(
       "SELECT lang, can_dm FROM users WHERE user_id = ?"
@@ -1999,8 +2094,61 @@ export async function onRequest(context) {
     : [];
   const method = request.method.toUpperCase();
 
-  const initData = request.headers.get("X-Init-Data") || "";
-  const user = await verifyTelegramInitData(initData, env);
+  // POST /api/webhook (Telegram Bot API webhook verified via TELEGRAM_WEBHOOK_SECRET)
+  if (method === "POST" && route.length === 1 && route[0] === "webhook") {
+    const expectedSecret = getWebhookSecret(env);
+    if (!expectedSecret) {
+      return err("Webhook secret is not configured.", 503);
+    }
+    const providedSecret = request.headers.get("X-Telegram-Bot-Api-Secret-Token") || "";
+    if (!timingSafeEqualHex(providedSecret, expectedSecret)) {
+      return err("Unauthorized webhook request.", 401);
+    }
+    if (!env || !env.DB) {
+      return err("Database binding DB is not configured.", 500);
+    }
+    try {
+      await ensureDatabaseSchema(env.DB);
+      const update = await readJsonBody(request);
+      const msg = update && update.message;
+      const from = msg && msg.from;
+      if (from && !from.is_bot && from.id !== undefined && from.id !== null) {
+        const uid = String(from.id);
+        const uname = typeof from.username === "string" ? from.username.trim().replace(/^@/, "") : "";
+        const fname = typeof from.first_name === "string" ? from.first_name.trim().slice(0, 80) : "";
+        const nowSec = Math.floor(Date.now() / 1000);
+        const isPrivate = msg.chat && msg.chat.type === "private";
+        if (isPrivate) {
+          await env.DB.prepare(
+            `INSERT INTO users (user_id, username, first_name, lang, can_dm, first_seen, last_seen)
+             VALUES (?, ?, ?, 'en', 1, ?, ?)
+             ON CONFLICT(user_id) DO UPDATE SET
+               username = excluded.username,
+               first_name = excluded.first_name,
+               can_dm = 1,
+               last_seen = excluded.last_seen`
+          )
+            .bind(uid, uname || null, fname || null, nowSec, nowSec)
+            .run();
+          if (typeof msg.text === "string" && msg.text.trim().startsWith("/start")) {
+            safeWaitUntil(
+              context,
+              sendTelegramMessage(
+                env,
+                msg.chat.id,
+                "Welcome to MILKII APP! Tap the Menu button below to open the Ethiopia-wide marketplace."
+              )
+            );
+          }
+        }
+      }
+      return json({ ok: true });
+    } catch (e) {
+      return err("Server error: " + (e && e.message ? e.message : "unknown"), 500);
+    }
+  }
+
+  const user = await authenticateRequest(request, env);
   if (!user) {
     return err("Unauthorized. Please open MILKII APP from Telegram.", 401);
   }
@@ -2058,12 +2206,27 @@ export async function onRequest(context) {
         )
         .run();
 
+      const jwtSecret = getJwtSecret(env);
+      const token = jwtSecret
+        ? await signJwt(
+            {
+              sub: user.id,
+              username: user.username,
+              firstName: user.firstName,
+              canDm: Boolean(user.canDm),
+              exp: nowSec + 86400
+            },
+            jwtSecret
+          )
+        : null;
+
       return json({
         id: user.id,
         username: user.username,
         isAdmin: user.isAdmin,
         isOwner: user.isOwner,
-        canDm: Boolean(user.canDm)
+        canDm: Boolean(user.canDm),
+        ...(token ? { token } : {})
       });
     }
 
