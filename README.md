@@ -88,9 +88,8 @@ You need free accounts on these services:
 
 1. **Telegram** — Runs the bot and hosts the Mini App interface inside Telegram.
 2. **GitHub** — Stores your repository files so Cloudflare Pages can deploy them.
-3. **Cloudflare** — Provides **Cloudflare Pages** (frontend hosting), **Pages Functions** (backend API), and **Cloudflare D1** (SQLite database).
+3. **Cloudflare** — Provides **Cloudflare Pages** (frontend hosting), **Pages Functions** (backend API), **Cloudflare D1** (SQLite database), and **Cloudflare Workers AI** (built-in AI chat and translation with no external AI key).
 4. **Cloudinary** — Stores seller photos and videos and delivers resized thumbnails and streams.
-5. **Anthropic API** — Powers the AI search assistant and AI listing translation (requires an API key and funded API credits).
 
 ## Setup Step by Step
 
@@ -136,6 +135,7 @@ You need free accounts on these services:
 > CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at);
 > CREATE INDEX IF NOT EXISTS idx_items_created ON items(created_at);
 > ALTER TABLE items ADD COLUMN approved_at INTEGER;
+> ALTER TABLE items ADD COLUMN text_lang TEXT DEFAULT 'en';
 > ALTER TABLE banned ADD COLUMN reason TEXT;
 > ALTER TABLE banned ADD COLUMN banned_at INTEGER;
 > ALTER TABLE banned ADD COLUMN banned_by TEXT;
@@ -151,17 +151,21 @@ You need free accounts on these services:
    - **Build output directory:** type `public`
 5. Click **Save and Deploy**. Wait for the first deploy to finish and note your `https://YOUR_PROJECT.pages.dev` URL.
 
-### 7. Bind the D1 database to the Pages project
-1. Open your Cloudflare Pages project and go to **Settings > Bindings** (or **Settings > Functions > D1 database bindings**).
-2. Click **Add** > choose **D1 database**.
-3. Set **Variable name** to `DB` (exact capital letters).
-4. Select `milkii-db` as the **D1 database** and click **Save**.
-5. Make sure the binding is added for **Production** (and **Preview** if you use preview links).
+### 7. Bind the D1 database and Workers AI to the Pages project
+1. Open your Cloudflare Pages project and go to **Settings > Bindings** (or **Settings > Functions**).
+2. Add the D1 database binding:
+   - Click **Add** > choose **D1 database**.
+   - Set **Variable name** to `DB` (exact capital letters).
+   - Select `milkii-db` as the **D1 database** and click **Save**.
+3. Add the Workers AI binding:
+   - In Cloudflare dashboard, go to **Workers & Pages**, select your project, then **Settings > Bindings > Add > Workers AI**.
+   - Set the variable name to `AI` (capital letters) and save, then redeploy.
+4. Make sure both bindings (`DB` and `AI`) are added for **Production** (and **Preview** if you use preview links).
 
 ### 8. Add environment variables and redeploy
 1. Stay in your Pages project and open **Settings > Variables and Secrets** (or **Settings > Environment variables**).
-2. Add all 7 variables listed in Section 9 (**Environment Variables**) for **Production**.
-3. Go to the **Deployments** tab, click the three-dot menu on the latest deployment, and click **Retry deployment** so the new binding and variables take effect.
+2. Add all 6 variables listed in Section 9 (**Environment Variables**) for **Production**.
+3. Go to the **Deployments** tab, click the three-dot menu on the latest deployment, and click **Retry deployment** so the new bindings and variables take effect.
 
 ### 9. Connect the Mini App to your Telegram bot
 1. Open **@BotFather** in Telegram.
@@ -179,7 +183,6 @@ Add these variables in Cloudflare Pages under **Settings > Variables and Secrets
 | Name | Where to get it | Secret? | What it is for |
 | --- | --- | --- | --- |
 | `BOT_TOKEN` | **@BotFather** in Telegram (`YOUR_BOT_TOKEN`) | Yes | Verifies Telegram user logins on the server and sends Telegram notifications |
-| `ANTHROPIC_API_KEY` | Anthropic Console (`YOUR_ANTHROPIC_API_KEY`) | Yes | Powers the AI assistant and AI item translation |
 | `ADMIN_IDS` | **@userinfobot** in Telegram (for example `123456789,987654321`) | No | Comma-separated Telegram user IDs that get Admin access |
 | `OWNER_IDS` | **@userinfobot** in Telegram (for example `123456789`) | No | Comma-separated Telegram user IDs that get Owner access (and Admin access) |
 | `CLOUDINARY_CLOUD_NAME` | Cloudinary Dashboard (`YOUR_CLOUD_NAME`) | No | Identifies your Cloudinary storage account for uploads and image URLs |
@@ -229,7 +232,7 @@ Non-owner admins can view the **Settings** screen, but only an Owner can save ch
 
 - **Telegram login is verified on the server:** Every API request sends Telegram `initData` in a header, and the backend verifies its HMAC-SHA256 signature using `BOT_TOKEN` and rejects expired logins (older than 24 hours).
 - **Admin and Owner rights are checked on the server:** Every `/api/admin/*` endpoint verifies `ADMIN_IDS` and `OWNER_IDS` on the server. The browser cannot grant itself admin or owner access.
-- **Never put secrets in GitHub or `public/index.html`:** Keep `BOT_TOKEN`, `ANTHROPIC_API_KEY`, and `CLOUDINARY_API_SECRET` only in Cloudflare Pages environment variables.
+- **Never put secrets in GitHub or `public/index.html`:** Keep `BOT_TOKEN` and `CLOUDINARY_API_SECRET` only in Cloudflare Pages environment variables. No external AI API key is needed because AI runs through Cloudflare's `AI` binding.
 - **Never share `BOT_TOKEN`:** Anyone with your Bot Token can control your bot and forge user logins.
 - **Ban rules:** Banned users cannot upload files or create listings. Banning a user immediately deletes all of their items and removes their uploaded photos/videos from Cloudinary. Admins and Owners can never be banned.
 - **Upload and data limits:** The backend verifies every uploaded file directly against Cloudinary (folder `milkii/items/<user_id>/`, max 10 MB images, max 30 MB and 10s videos) before saving a listing, and rejects malformed receipt images.
@@ -237,11 +240,11 @@ Non-owner admins can view the **Settings** screen, but only an Owner can save ch
 ## Costs and Limits
 
 ### What is free vs. what can cost money
-- **Free tiers available:** Telegram Bot/Mini App, GitHub, Cloudflare Pages + D1 free plan, and Cloudinary free plan.
+- **Free tiers available:** Telegram Bot/Mini App, GitHub, Cloudflare Pages + D1 + Workers AI free tiers, and Cloudinary free plan.
 - **Can cost money:**
-  - **Anthropic API:** Pay-as-you-go charges apply whenever users use the AI assistant or AI translation.
+  - **Cloudflare Workers AI:** Includes a free daily Neuron allowance; paid Workers usage applies if your AI chat and translation traffic goes above the free tier.
   - **Cloudinary:** Charges apply if your total media storage or bandwidth goes above Cloudinary's free monthly allowance.
-  - **Cloudflare:** Charges apply only if traffic or D1 database usage exceeds Cloudflare's free plan limits.
+  - **Cloudflare Pages / D1:** Charges apply only if traffic or D1 database usage exceeds Cloudflare's free plan limits.
 
 ### Limits built into the code
 - **Photos per item:** 1 to 6 photos (JPG, PNG, or WEBP; max 10 MB each).
@@ -260,6 +263,7 @@ Non-owner admins can view the **Settings** screen, but only an Owner can save ch
 | `"Please open MILKII APP from Telegram."` appears in a web browser | The page was opened outside Telegram, so `Telegram.WebApp.initData` is empty | Open the app from your Telegram bot's Menu Button or Mini App link |
 | Blank page after deploying to Cloudflare Pages | **Build output directory** was not set to `public` or a build command ran | Set **Build command** to empty and **Build output directory** to `public`, then redeploy |
 | `"Server error"` or failed API calls when loading the app | The D1 binding `DB` is missing, named wrong, or `schema.sql` was not executed | Bind `milkii-db` to variable name `DB` (all caps), run `schema.sql` in D1 Console, and redeploy |
+| `"AI is not available right now"` | The Workers AI binding named `AI` is missing or the model name in the code is not in the Cloudflare model list | Go to Cloudflare dashboard > **Workers & Pages** > your project > **Settings > Bindings > Add > Workers AI**, set variable name to `AI` (capital letters), check `TRANSLATE_MODEL` / `CHAT_MODEL` in `functions/api/[[route]].js`, and redeploy |
 | **Admin** button does not appear | Your Telegram ID is missing from `ADMIN_IDS` (and `OWNER_IDS`), or has spaces/typos | Confirm your numeric ID with `@userinfobot`, add it to `ADMIN_IDS`, and redeploy |
 | Video upload is rejected | Video is longer than 10 seconds, larger than 30 MB, or not MP4/MOV/WEBM | Trim the video to 10 seconds or less and keep file size under 30 MB |
 | Notifications do not arrive in Telegram | The user or admin never pressed **Start** in the bot or did not allow messages (`can_dm = 0`), or `BOT_TOKEN` is wrong | Press **Start** in the bot chat, tap **Allow** if asked for write access, reopen MILKII APP, and check `BOT_TOKEN` |

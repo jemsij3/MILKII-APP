@@ -1338,6 +1338,8 @@
         placeLabel: "Neighborhood / Area (optional)",
         placePlaceholder: "e.g. Bole, Piassa, Kebele 05",
         descLabel: "Description",
+        textLangLabel: "Language of your title and description",
+        textLangErr: "Please select the language of your title and description.",
         negotiableLabel: "Price is negotiable",
         sellerTgLabel: "Your Telegram username",
         noTgUsername: "You need a Telegram username to post. Open Telegram Settings > Username, set one, then reopen MILKII APP.",
@@ -1345,6 +1347,7 @@
         messageSeller: "Message seller",
         translateHeading: "Translate with AI",
         translating: "Translating...",
+        machineTranslationNote: "Machine translation. It may contain mistakes.",
         save: "Save",
         unsave: "Saved ✓",
         report: "Report this item",
@@ -1541,6 +1544,8 @@
         placeLabel: "Ganda / Naannoo (dirqama miti)",
         placePlaceholder: "fkn. Bole, Piassa, Qabalee 05",
         descLabel: "Ibsa",
+        textLangLabel: "Afaan mata dureefi ibsi ittiin barreeffame",
+        textLangErr: "Maaloo afaan mata dureefi ibsi keessanii filadhaa.",
         negotiableLabel: "Gatiin ni mari'atama",
         sellerTgLabel: "Maqaa fayyadamaa Telegram keessanii",
         noTgUsername: "Maxxansuuf maqaa fayyadamaa Telegram (username) qabaachuu qabdu. Telegram Settings > Username keessatti saagaa.",
@@ -1548,6 +1553,7 @@
         messageSeller: "Gurgurtoota dubbisi",
         translateHeading: "AI dhaan hiiki",
         translating: "Hiikamaa jira...",
+        machineTranslationNote: "Hiikkaa maashinii ti. Dogoggora qabaachuu danda'a.",
         save: "Kuusi",
         unsave: "Kuufame ✓",
         report: "Gabaasi",
@@ -1744,6 +1750,8 @@
         placeLabel: "ሰፈር / አካባቢ (አማራጭ)",
         placePlaceholder: "ምሳሌ፡ ቦሌ፣ ፒያሳ፣ ቀበሌ 05",
         descLabel: "ዝርዝር መግለጫ",
+        textLangLabel: "የርዕስዎ እና የመግለጫዎ ቋንቋ",
+        textLangErr: "እባክዎ የርዕስዎን እና የመግለጫዎን ቋንቋ ይምረጡ።",
         negotiableLabel: "ዋጋው ይደራደራል",
         sellerTgLabel: "የእርስዎ Telegram username",
         noTgUsername: "ለመለጠፍ Telegram username ያስፈልጋል። Telegram Settings > Username ውስጥ አዘጋጅተው እንደገና MILKII APP ይክፈቱ።",
@@ -1751,6 +1759,7 @@
         messageSeller: "ሻጩን ያናግሩ",
         translateHeading: "በ AI ተርጉም",
         translating: "በመተርጎም ላይ...",
+        machineTranslationNote: "የማሽን ትርጉም ነው። ስህተቶች ሊኖሩት ይችላሉ።",
         save: "አስቀምጥ",
         unsave: "ተቀምጧል ✓",
         report: "ሪፖርት አድርግ",
@@ -1980,10 +1989,11 @@
         saved: loadSavedItems(),
         aiMessages: [],
         aiBusy: false,
-        post: createEmptyPost()
+        post: createEmptyPost(savedLang === "om" || savedLang === "am" ? savedLang : "en")
       };
 
-      function createEmptyPost() {
+      function createEmptyPost(defaultLang = "en") {
+        const cleanLang = defaultLang === "om" || defaultLang === "am" ? defaultLang : "en";
         return {
           step: 1,
           cat: "",
@@ -1992,6 +2002,7 @@
           region: "",
           city: "",
           place: "",
+          textLang: cleanLang,
           title: "",
           price: "",
           negotiable: false,
@@ -3210,6 +3221,15 @@
               ${p.errors.place ? `<div class="field-error">${esc(p.errors.place)}</div>` : ""}
             </div>
             <div class="field-group">
+              <label class="field-label"><span>${esc(t("textLangLabel"))}<span class="req">*</span></span></label>
+              <select id="fTextLang" class="select">
+                <option value="en"${p.textLang === "en" ? " selected" : ""}>English</option>
+                <option value="om"${p.textLang === "om" ? " selected" : ""}>Afaan Oromoo</option>
+                <option value="am"${p.textLang === "am" ? " selected" : ""}>አማርኛ</option>
+              </select>
+              ${p.errors.textLang ? `<div class="field-error">${esc(p.errors.textLang)}</div>` : ""}
+            </div>
+            <div class="field-group">
               <label class="field-label">
                 <span>${esc(t("titleLabel"))}<span class="req">*</span></span>
                 <span class="char-count" id="titleCount">${p.title.length}/60</span>
@@ -3479,15 +3499,20 @@
                  <table class="details-table">${locationRows}${attrRows}</table>`
               : ""
           }
-          <div class="translate-box">
-            <div style="font-weight:700;font-size:13px;">🌐 ${esc(t("translateHeading"))}</div>
-            <div class="translate-btns">
-              <button type="button" class="btn btn-sm" data-tr-lang="en">English</button>
-              <button type="button" class="btn btn-sm" data-tr-lang="om">Afaan Oromoo</button>
-              <button type="button" class="btn btn-sm" data-tr-lang="am">አማርኛ</button>
-            </div>
-            <div id="translateOut" class="translate-result" style="display:none;"></div>
-          </div>
+          ${(() => {
+            const itemLang = item.text_lang === "om" || item.text_lang === "am" ? item.text_lang : "en";
+            return `
+              <div class="translate-box">
+                <div style="font-weight:700;font-size:13px;">🌐 ${esc(t("translateHeading"))}</div>
+                <div class="translate-btns">
+                  <button type="button" class="btn btn-sm" data-tr-lang="en"${itemLang === "en" ? " disabled" : ""}>English</button>
+                  <button type="button" class="btn btn-sm" data-tr-lang="om"${itemLang === "om" ? " disabled" : ""}>Afaan Oromoo</button>
+                  <button type="button" class="btn btn-sm" data-tr-lang="am"${itemLang === "am" ? " disabled" : ""}>አማርኛ</button>
+                </div>
+                <div id="translateOut" class="translate-result" style="display:none;"></div>
+              </div>
+            `;
+          })()}
           <div class="action-stack">
             ${
               cleanTg
@@ -3555,19 +3580,46 @@
           });
         }
 
+        const itemLang = item.text_lang === "om" || item.text_lang === "am" ? item.text_lang : "en";
         sheet.querySelectorAll("[data-tr-lang]").forEach((btn) => {
           btn.addEventListener("click", async () => {
             const to = btn.getAttribute("data-tr-lang");
+            if (!to || to === itemLang) return;
             const out = document.getElementById("translateOut");
             out.style.display = "block";
             out.textContent = t("translating");
             try {
-              const sourceText = `${item.title}\n\n${item.desc}`;
               const res = await api("/api/ai", {
                 method: "POST",
-                body: JSON.stringify({ task: "translate", text: sourceText, to })
+                body: JSON.stringify({
+                  task: "translate",
+                  texts: [String(item.title || ""), String(item.desc || "")],
+                  from: itemLang,
+                  to
+                })
               });
-              out.textContent = res.text;
+              const trList = Array.isArray(res.texts) ? res.texts : [];
+              const trTitle = typeof trList[0] === "string" ? trList[0] : "";
+              const trDesc = typeof trList[1] === "string" ? trList[1] : "";
+              out.innerHTML = "";
+              if (trTitle) {
+                const titleEl = document.createElement("div");
+                titleEl.style.fontWeight = "800";
+                titleEl.style.marginBottom = "4px";
+                titleEl.textContent = trTitle;
+                out.appendChild(titleEl);
+              }
+              if (trDesc) {
+                const descEl = document.createElement("div");
+                descEl.textContent = trDesc;
+                out.appendChild(descEl);
+              }
+              const noteEl = document.createElement("div");
+              noteEl.style.marginTop = "8px";
+              noteEl.style.fontSize = "11px";
+              noteEl.style.color = "var(--text-muted)";
+              noteEl.textContent = t("machineTranslationNote");
+              out.appendChild(noteEl);
             } catch (e) {
               out.textContent = e.message;
             }
@@ -3975,6 +4027,10 @@
           errors.place = t("placeErr");
         }
 
+        if (p.textLang !== "en" && p.textLang !== "om" && p.textLang !== "am") {
+          errors.textLang = t("textLangErr");
+        }
+
         const title = p.title.trim();
         if (title.length < 3 || title.length > 60) errors.title = t("titleErr");
 
@@ -4030,6 +4086,7 @@
             region: p.region,
             city: p.city.trim(),
             place: p.place.trim(),
+            text_lang: p.textLang,
             title: p.title.trim(),
             price: Number(p.price),
             negotiable: Boolean(p.negotiable),
@@ -4327,7 +4384,7 @@
               showToast(t("noTgUsername"));
               return;
             }
-            state.post = createEmptyPost();
+            state.post = createEmptyPost(state.lang);
             state.view = "post";
             renderApp();
           });
@@ -4802,6 +4859,13 @@
             state.post.place = fPlace.value;
             const c = document.getElementById("placeCount");
             if (c) c.textContent = `${fPlace.value.length}/40`;
+          });
+        }
+
+        const fTextLang = document.getElementById("fTextLang");
+        if (fTextLang) {
+          fTextLang.addEventListener("change", () => {
+            state.post.textLang = fTextLang.value;
           });
         }
 
