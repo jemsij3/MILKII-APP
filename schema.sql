@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, owner_id TEXT NOT NULL, tg TEXT, cat TEXT NOT NULL, title TEXT NOT NULL, price INTEGER NOT NULL, negotiable INTEGER DEFAULT 0, region TEXT, city TEXT, place TEXT, descr TEXT, attrs TEXT DEFAULT '{}', media TEXT DEFAULT '[]', status TEXT NOT NULL DEFAULT 'pending', reject_reason TEXT, reports INTEGER DEFAULT 0, featured INTEGER DEFAULT 0, plan TEXT, fee INTEGER DEFAULT 0, pay_method TEXT, pay_ref TEXT, receipt TEXT, verified INTEGER DEFAULT 0, created_at INTEGER, approved_at INTEGER);
+CREATE INDEX IF NOT EXISTS idx_items_status ON items(status);
+CREATE INDEX IF NOT EXISTS idx_items_region_city ON items(region, city);
+CREATE INDEX IF NOT EXISTS idx_items_created ON items(created_at);
+CREATE TABLE IF NOT EXISTS reports (item_id INTEGER, user_id TEXT, PRIMARY KEY (item_id, user_id));
+CREATE TABLE IF NOT EXISTS banned (user_id TEXT PRIMARY KEY, username TEXT, reason TEXT, banned_at INTEGER, banned_by TEXT);
+CREATE TABLE IF NOT EXISTS ai_usage (user_id TEXT, day TEXT, n INTEGER, PRIMARY KEY (user_id, day));
+CREATE TABLE IF NOT EXISTS upload_usage (user_id TEXT, day TEXT, n INTEGER, PRIMARY KEY (user_id, day));
+CREATE TABLE IF NOT EXISTS users (user_id TEXT PRIMARY KEY, username TEXT, first_name TEXT, lang TEXT DEFAULT 'en', can_dm INTEGER DEFAULT 0, first_seen INTEGER, last_seen INTEGER);
+CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_by TEXT, updated_at INTEGER);
+CREATE TABLE IF NOT EXISTS audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, admin_id TEXT NOT NULL, admin_username TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, details TEXT, created_at INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at);

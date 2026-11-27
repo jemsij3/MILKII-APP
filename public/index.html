@@ -1,0 +1,4928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>MILKII APP</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #f6f7f4;
+      --surface: #ffffff;
+      --surface-2: #eef1eb;
+      --text: #18211b;
+      --text-muted: #5a685e;
+      --border: #dce2da;
+      --primary: #1f7a4d;
+      --primary-hover: #18623d;
+      --primary-soft: #e3f2ea;
+      --yellow: #ffd54a;
+      --yellow-text: #1c1906;
+      --danger: #c62828;
+      --danger-soft: #fdecea;
+      --warn: #b45309;
+      --warn-soft: #fef3c7;
+      --shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121714;
+        --surface: #1b221e;
+        --surface-2: #242d28;
+        --text: #eef3ef;
+        --text-muted: #9eb0a3;
+        --border: #2e3933;
+        --primary: #2ca368;
+        --primary-hover: #35b977;
+        --primary-soft: #1a3527;
+        --yellow: #ffd54a;
+        --yellow-text: #191605;
+        --danger: #ef5350;
+        --danger-soft: #3a1a1a;
+        --warn: #fbbf24;
+        --warn-soft: #3a2d12;
+        --shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    html[data-theme="light"] {
+      --bg: #f6f7f4;
+      --surface: #ffffff;
+      --surface-2: #eef1eb;
+      --text: #18211b;
+      --text-muted: #5a685e;
+      --border: #dce2da;
+      --primary: #1f7a4d;
+      --primary-hover: #18623d;
+      --primary-soft: #e3f2ea;
+      --yellow: #ffd54a;
+      --yellow-text: #1c1906;
+      --danger: #c62828;
+      --danger-soft: #fdecea;
+      --warn: #b45309;
+      --warn-soft: #fef3c7;
+      --shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+
+    html[data-theme="dark"] {
+      --bg: #121714;
+      --surface: #1b221e;
+      --surface-2: #242d28;
+      --text: #eef3ef;
+      --text-muted: #9eb0a3;
+      --border: #2e3933;
+      --primary: #2ca368;
+      --primary-hover: #35b977;
+      --primary-soft: #1a3527;
+      --yellow: #ffd54a;
+      --yellow-text: #191605;
+      --danger: #ef5350;
+      --danger-soft: #3a1a1a;
+      --warn: #fbbf24;
+      --warn-soft: #3a2d12;
+      --shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+    }
+
+    .gate-message {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      padding-bottom: calc(92px + var(--safe-bottom));
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px;
+    }
+
+    .topbar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      color: var(--primary);
+    }
+
+    .lang-select {
+      min-height: 44px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .nav-bar {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-bar::-webkit-scrollbar { display: none; }
+
+    .nav-btn {
+      min-height: 44px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      font-weight: 600;
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .nav-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .search-wrap {
+      padding: 12px 14px 4px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .search-input {
+      width: 100%;
+      min-height: 46px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font-size: 15px;
+    }
+
+    .clear-search {
+      min-width: 44px;
+      min-height: 44px;
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .loc-filter-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 8px 14px 2px;
+    }
+
+    .loc-select,
+    .loc-input {
+      width: 100%;
+      min-height: 44px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 13px;
+      font-weight: 600;
+      outline: 0;
+    }
+
+    .loc-select:focus,
+    .loc-input:focus {
+      border-color: var(--primary);
+    }
+
+    .chips-wrap {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 10px 14px;
+      scrollbar-width: none;
+    }
+    .chips-wrap::-webkit-scrollbar { display: none; }
+
+    .chip {
+      min-height: 44px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .content {
+      padding: 6px 14px 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .card-media {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: var(--surface-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .card-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-emoji {
+      font-size: 46px;
+    }
+
+    .badge-star {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: var(--yellow);
+      color: var(--yellow-text);
+      font-weight: 800;
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    .badge-play {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.68);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+
+    .card-body {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .price-tag {
+      display: inline-block;
+      align-self: flex-start;
+      background: var(--yellow);
+      color: var(--yellow-text);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 7px;
+      margin-bottom: 2px;
+    }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-region {
+      font-size: 11px;
+      color: var(--text-muted);
+      opacity: 0.9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-summary {
+      font-size: 11px;
+      color: var(--primary);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: auto;
+      padding-top: 2px;
+    }
+
+    .fab-wrap {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 25;
+      padding: 10px 14px calc(12px + var(--safe-bottom));
+      background: linear-gradient(to top, var(--bg) 70%, rgba(0, 0, 0, 0));
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+    }
+
+    .fab-btn {
+      pointer-events: auto;
+      width: 100%;
+      max-width: 532px;
+      min-height: 50px;
+      border: 0;
+      border-radius: var(--radius);
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(31, 122, 77, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .fab-btn:active {
+      background: var(--primary-hover);
+    }
+
+    .btn {
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-danger {
+      background: var(--danger-soft);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .btn-warn {
+      background: var(--warn-soft);
+      border-color: var(--warn);
+      color: var(--warn);
+    }
+
+    .btn-sm {
+      min-height: 44px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .state-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 18px;
+      text-align: center;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    .state-box .emoji {
+      font-size: 36px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(0, 0, 0, 0.55);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .backdrop.open {
+      display: flex;
+    }
+
+    .sheet {
+      width: 100%;
+      max-width: 560px;
+      max-height: 92vh;
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      overflow-y: auto;
+      padding: 14px 16px calc(20px + var(--safe-bottom));
+      box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .sheet-handle {
+      width: 42px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--border);
+      margin: 0 auto 12px;
+    }
+
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .gallery-wrap {
+      position: relative;
+      margin: 0 -16px 12px;
+      background: #000;
+    }
+
+    .gallery-track {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .gallery-track::-webkit-scrollbar { display: none; }
+
+    .gallery-slide {
+      flex: 0 0 100%;
+      scroll-snap-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-height: 360px;
+      min-height: 240px;
+      background: #111;
+    }
+
+    .gallery-slide img,
+    .gallery-slide video {
+      width: 100%;
+      max-height: 360px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .gallery-count {
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.72);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .detail-price-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .detail-price {
+      background: var(--yellow);
+      color: var(--yellow-text);
+      font-weight: 800;
+      font-size: 18px;
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .neg-badge {
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .detail-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 4px 0;
+    }
+
+    .detail-place {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .detail-desc {
+      white-space: pre-wrap;
+      background: var(--surface-2);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 14px;
+      font-size: 14px;
+    }
+
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+      font-size: 14px;
+    }
+
+    .details-table th,
+    .details-table td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .details-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+      width: 44%;
+    }
+
+    .translate-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .translate-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .translate-result {
+      margin-top: 10px;
+      padding: 10px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      white-space: pre-wrap;
+      font-size: 14px;
+    }
+
+    .action-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .action-row > .btn {
+      flex: 1 1 120px;
+    }
+
+    .wizard-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .wizard-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .step-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      transition: width 0.2s ease;
+    }
+
+    .notice-box {
+      background: var(--warn-soft);
+      color: var(--warn);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .info-box {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .cat-picker {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .cat-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border-radius: var(--radius);
+      border: 2px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      text-align: left;
+      min-height: 68px;
+    }
+
+    .cat-option.selected {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    .cat-option-emoji {
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+
+    .cat-option-title {
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .cat-option-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .field-group {
+      margin-bottom: 14px;
+    }
+
+    .field-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .req {
+      color: var(--danger);
+      margin-left: 3px;
+    }
+
+    .char-count {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .input,
+    .select,
+    .textarea {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      outline: 0;
+    }
+
+    .input:focus,
+    .select:focus,
+    .textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    .field-error {
+      color: var(--danger);
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .quick-places {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .quick-place-btn {
+      min-height: 44px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .multi-checks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .check-pill {
+      min-height: 44px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .media-counters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .media-counter {
+      background: var(--surface-2);
+      padding: 6px 12px;
+      border-radius: 999px;
+    }
+
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .media-tile {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: var(--surface-2);
+      border: 2px solid var(--border);
+    }
+
+    .media-tile.cover {
+      border-color: var(--primary);
+    }
+
+    .media-tile img,
+    .media-tile video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .media-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      min-width: 32px;
+      min-height: 32px;
+      border-radius: 999px;
+      border: 0;
+      background: rgba(0, 0, 0, 0.72);
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .media-cover-tag {
+      position: absolute;
+      left: 4px;
+      bottom: 4px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .media-progress {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.72);
+      color: #fff;
+      font-size: 11px;
+      padding: 4px;
+      text-align: center;
+    }
+
+    .plan-card {
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      min-height: 70px;
+    }
+
+    .plan-card.selected {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    .plan-price {
+      background: var(--yellow);
+      color: var(--yellow-text);
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .pay-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin: 12px 0;
+    }
+
+    .pay-account-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 6px 0;
+    }
+
+    .receipt-preview {
+      max-width: 100%;
+      max-height: 240px;
+      border-radius: 8px;
+      margin-top: 8px;
+      display: block;
+      object-fit: contain;
+    }
+
+    .list-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .row-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .row-main {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .row-thumb {
+      width: 68px;
+      height: 68px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: var(--surface-2);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      overflow: hidden;
+    }
+
+    .row-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .row-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .row-title {
+      font-weight: 800;
+      font-size: 15px;
+      word-break: break-word;
+    }
+
+    .row-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      word-break: break-word;
+    }
+
+    .status-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .st-pending { background: var(--warn-soft); color: var(--warn); }
+    .st-approved { background: var(--primary-soft); color: var(--primary); }
+    .st-rejected { background: var(--danger-soft); color: var(--danger); }
+    .st-sold { background: var(--surface-2); color: var(--text-muted); }
+
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .chat-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 220px);
+      min-height: 360px;
+      overflow: hidden;
+    }
+
+    .chat-log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bubble {
+      max-width: 85%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      white-space: pre-wrap;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    .bubble-user {
+      align-self: flex-end;
+      background: var(--primary);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bubble-ai {
+      align-self: flex-start;
+      background: var(--surface-2);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-form {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .dialog-card {
+      width: 92%;
+      max-width: 440px;
+      margin: auto;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .toast {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 60;
+      background: #1b221e;
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      max-width: 90%;
+      text-align: center;
+      display: none;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .chart-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .chart-axis {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .hbar-row {
+      margin-bottom: 8px;
+    }
+
+    .hbar-label-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .hbar-track {
+      height: 10px;
+      background: var(--surface-2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .hbar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 999px;
+    }
+
+    .user-badge-banned {
+      display: inline-block;
+      background: var(--danger-soft);
+      color: var(--danger);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <div id="sheetBackdrop" class="backdrop" aria-hidden="true">
+    <div id="sheetContent" class="sheet" role="dialog" aria-modal="true"></div>
+  </div>
+
+  <div id="dialogBackdrop" class="backdrop" aria-hidden="true">
+    <div id="dialogContent" class="dialog-card" role="dialog" aria-modal="true"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const DEV_PREVIEW = false;
+
+    const I18N = {
+      en: {
+        openFromTg: "Please open MILKII APP from Telegram.",
+        navBrowse: "Browse",
+        navSaved: "Saved",
+        navMine: "My items",
+        navAi: "AI",
+        navAdmin: "Admin",
+        searchPlaceholder: "Search items, cities, regions, brands...",
+        allEthiopia: "All Ethiopia",
+        cityFilterPlaceholder: "City or town...",
+        allCats: "All",
+        postItem: "Post an item",
+        loading: "Loading MILKII APP...",
+        emptyBrowse: "No matching items yet. Be the first to post!",
+        emptySaved: "No saved items yet. Tap Save on any listing.",
+        emptyMine: "You have not posted any items yet.",
+        emptyAdmin: "No items in this tab.",
+        birr: "Birr",
+        negotiable: "Negotiable",
+        startingPrice: "Starting price (Birr)",
+        priceLabel: "Price (Birr)",
+        titleLabel: "Title",
+        regionLabel: "Region",
+        selectRegionOption: "Select region",
+        cityLabel: "City / Town",
+        cityPlaceholder: "Type city or pick below",
+        placeLabel: "Neighborhood / Area (optional)",
+        placePlaceholder: "e.g. Bole, Piassa, Kebele 05",
+        descLabel: "Description",
+        negotiableLabel: "Price is negotiable",
+        sellerTgLabel: "Your Telegram username",
+        noTgUsername: "You need a Telegram username to post. Open Telegram Settings > Username, set one, then reopen MILKII APP.",
+        detailsHeading: "Details",
+        messageSeller: "Message seller",
+        translateHeading: "Translate with AI",
+        translating: "Translating...",
+        save: "Save",
+        unsave: "Saved ✓",
+        report: "Report this item",
+        reportedOk: "Report sent. Admin will review it.",
+        close: "Close",
+        markSold: "Mark sold",
+        deleteBtn: "Delete",
+        confirmDelete: "Delete this item permanently?",
+        confirmBan: "Ban this seller and delete all their listings?",
+        banTitle: "Ban user",
+        banReasonLabel: "Reason (optional, shown to user)",
+        banReasonPlaceholder: "e.g. Scam, prohibited items, spam",
+        bannedOk: "User banned.",
+        unbannedOk: "User unbanned.",
+        confirmUnban: "Unban this user? Deleted listings stay deleted.",
+        confirmSold: "Mark this item as sold?",
+        rejectTitle: "Reject listing",
+        rejectReasonLabel: "Reason (optional, shown to seller)",
+        rejectReasonPlaceholder: "e.g. Unclear photo, wrong price, missing receipt",
+        cancel: "Cancel",
+        confirm: "Confirm",
+        allowDmPrompt: "Allow MILKII APP to send you updates about your items?",
+        allowBtn: "Allow",
+        stepOf: "Step {step} of 6",
+        back: "Back",
+        next: "Next",
+        submit: "Submit listing",
+        submitting: "Submitting...",
+        step1Title: "Choose category",
+        step1Notice: "Do not post illegal items, weapons, drugs, stolen goods, or fake products.",
+        step2Title: "Photos & video",
+        step2Desc: "Up to 6 photos and one video of 10 seconds. Good, clear photos sell faster.",
+        photosCount: "Photos {n}/6",
+        videoCount: "Video {n}/1",
+        addPhotos: "Add photos",
+        addVideo: "Add video (<=10s)",
+        coverTag: "Cover",
+        uploading: "Uploading...",
+        failedRetry: "Failed · Retry",
+        errPhotoRead: "Could not read one of the photos.",
+        errPhotoMax: "You can upload up to 6 photos.",
+        errPhotoBig: "Photo is too large after compression (max 10 MB).",
+        errVideoOne: "Only 1 video is allowed per item.",
+        errVideoBig: "Video is too big (max 30 MB).",
+        errVideoLong: "Video must be 10 seconds or less.",
+        errWaitUploads: "Wait for all uploads to finish or remove failed ones.",
+        errNeedPhoto: "Please upload at least 1 photo.",
+        step3Title: "Item details",
+        step4Title: "Choose plan",
+        planFree: "Free",
+        planFreeDesc: "Shown after admin checks",
+        planStandard: "Standard",
+        planStandardDesc: "Priority review by admin",
+        planFeatured: "Featured",
+        planFeaturedDesc: "Top of list with a star ★",
+        step5Title: "Manual payment",
+        chooseMethod: "Payment method",
+        payToAccount: "Send {amount} Birr to:",
+        accountNumber: "Account / Phone",
+        accountHolder: "Account holder",
+        copyNumber: "Copy number",
+        copied: "Copied!",
+        payRefLabel: "Transaction reference / ID",
+        payRefPlaceholder: "e.g. FT26123ABC or Telebirr ref",
+        receiptLabel: "Upload receipt screenshot",
+        chooseReceipt: "Choose screenshot",
+        receiptReady: "Receipt attached",
+        step6Title: "Review & submit",
+        confirmLegal: "I confirm this item is legal and as described",
+        errConfirmLegal: "Please confirm the item is legal and as described.",
+        postedTitle: "Listing submitted!",
+        postedDesc: "Your listing is now pending admin review. Once approved (and payment verified if paid), buyers across Ethiopia will see it on MILKII APP.",
+        done: "Done",
+        statusPending: "pending",
+        statusApproved: "approved",
+        statusRejected: "rejected",
+        statusSold: "sold",
+        reasonPrefix: "Reason: ",
+        statTotal: "Total",
+        statWaiting: "Waiting",
+        statLive: "Live",
+        statSold: "Sold",
+        statReported: "Reported",
+        statIncome: "Income (Birr)",
+        tabPending: "Pending",
+        tabReported: "Reported",
+        tabAll: "All",
+        btnView: "View",
+        btnReceipt: "Receipt",
+        btnApprove: "Approve",
+        btnReject: "Reject",
+        btnBan: "Ban",
+        btnUnban: "Unban",
+        receiptTitle: "Payment receipt",
+        aiWelcome: "Hi! Ask me in English, Afaan Oromoo, or አማርኛ to find items anywhere in Ethiopia on MILKII APP. Always inspect items in person before paying.",
+        aiPlaceholder: "Ask what you are looking for in Ethiopia...",
+        send: "Send",
+        reqErr: "This field is required.",
+        regionErr: "Please select a region.",
+        cityErr: "City or town must be 2 to 40 characters.",
+        placeErr: "Neighborhood / area must be at most 40 characters.",
+        titleErr: "Title must be 3 to 60 characters.",
+        priceErr: "Enter a whole number from 0 to 100,000,000.",
+        descErr: "Description must be 10 to 300 characters.",
+        payMethodErr: "Select CBE or Telebirr.",
+        payRefErr: "Enter transaction reference (min 3 chars).",
+        receiptErr: "Please attach a receipt screenshot.",
+        adminTabItems: "Items",
+        adminTabUsers: "Users",
+        adminTabAnalytics: "Analytics",
+        adminTabAudit: "Audit",
+        adminTabSettings: "Settings",
+        usersSearchPlaceholder: "Search username, name or ID...",
+        usersFilterAll: "All",
+        usersFilterSellers: "Sellers",
+        usersFilterBanned: "Banned",
+        usersEmpty: "No matching users.",
+        usersItemsCount: "Items",
+        usersApprovedCount: "Live",
+        usersLastSeen: "Last seen",
+        bannedBadge: "Banned",
+        staffBadge: "Staff",
+        loadMore: "Load more",
+        days7: "7 days",
+        days30: "30 days",
+        days90: "90 days",
+        statUsers: "Users",
+        statNewUsers: "New users",
+        statActiveUsers: "Active users",
+        statApprovalRate: "Approval rate",
+        chartNewItemsPerDay: "New items per day",
+        chartIncomePerDay: "Income per day (Birr)",
+        chartByCategory: "Items by category",
+        chartByRegion: "Items by region",
+        chartTopCities: "Top cities",
+        chartByPlan: "Plans & income",
+        chartNoData: "No data yet.",
+        auditEmpty: "No audit records yet.",
+        actItemApprove: "Approved item",
+        actItemReject: "Rejected item",
+        actItemDelete: "Deleted item",
+        actUserBan: "Banned user",
+        actUserUnban: "Unbanned user",
+        actSettingsUpdate: "Updated settings",
+        actReceiptView: "Viewed receipt",
+        settingsPlansTitle: "Plan prices (Birr)",
+        settingsPaymentTitle: "Payment details",
+        settingsLimitsTitle: "Limits",
+        settingsFreeNote: "Free (always 0 Birr)",
+        settingsStandardFee: "Standard plan fee (Birr)",
+        settingsFeaturedFee: "Featured plan fee (Birr)",
+        settingsMethodLabel: "Display name / label",
+        settingsAccountNumber: "Account / phone number",
+        settingsHolderName: "Account holder name",
+        settingsMaxPending: "Max pending items per seller",
+        settingsAiDaily: "Daily AI requests per user",
+        settingsUploadDaily: "Daily uploads per user",
+        settingsSaveBtn: "Save settings",
+        settingsSaving: "Saving...",
+        settingsSaveConfirm: "Sellers will see the new payment numbers immediately. Save?",
+        settingsSavedOk: "Settings saved.",
+        settingsOwnerOnlyNote: "Only the owner can change settings.",
+        settingsErrFee: "Fees must be integers from 0 to 100000 (Free stays 0).",
+        settingsErrLimit: "Limits must be integers from 1 to 1000.",
+        settingsErrPay: "Fill all payment labels, numbers (max 40 chars) and holders (max 60 chars)."
+      },
+      om: {
+        openFromTg: "Please open MILKII APP from Telegram.",
+        navBrowse: "Sakatta'i",
+        navSaved: "Kuufame",
+        navMine: "Koo",
+        navAi: "AI",
+        navAdmin: "Bulchaa",
+        searchPlaceholder: "Meeshaa, magaalaa, naannoo, biraandii barbaadi...",
+        allEthiopia: "Itoophiyaa Hunda",
+        cityFilterPlaceholder: "Magaalaa / aanaa...",
+        allCats: "Hunda",
+        postItem: "Meeshaa maxxansi",
+        loading: "MILKII APP banamaa jira...",
+        emptyBrowse: "Meeshaan walsimu hin argamne. Jalqabaa ta'aatii maxxansaa!",
+        emptySaved: "Meeshaan kuufame hin jiru. Kuusuuf tuqaa.",
+        emptyMine: "Hamma ammaatti meeshaa hin maxxansine.",
+        emptyAdmin: "Tarree kana keessa meeshaan hin jiru.",
+        birr: "Birrii",
+        negotiable: "Mariif banaa",
+        startingPrice: "Gatii ka'umsaa (Birrii)",
+        priceLabel: "Gatii (Birrii)",
+        titleLabel: "Mata duree",
+        regionLabel: "Naannoo",
+        selectRegionOption: "Naannoo filadhu",
+        cityLabel: "Magaalaa",
+        cityPlaceholder: "Magaalaa barreessi ykn gadii filadhu",
+        placeLabel: "Ganda / Naannoo (dirqama miti)",
+        placePlaceholder: "fkn. Bole, Piassa, Qabalee 05",
+        descLabel: "Ibsa",
+        negotiableLabel: "Gatiin ni mari'atama",
+        sellerTgLabel: "Maqaa fayyadamaa Telegram keessanii",
+        noTgUsername: "Maxxansuuf maqaa fayyadamaa Telegram (username) qabaachuu qabdu. Telegram Settings > Username keessatti saagaa.",
+        detailsHeading: "Bal'ina",
+        messageSeller: "Gurgurtoota dubbisi",
+        translateHeading: "AI dhaan hiiki",
+        translating: "Hiikamaa jira...",
+        save: "Kuusi",
+        unsave: "Kuufame ✓",
+        report: "Gabaasi",
+        reportedOk: "Gabaafameera. Bulchaan ni ilaala.",
+        close: "Cufi",
+        markSold: "Gurgurameera",
+        deleteBtn: "Haqi",
+        confirmDelete: "Meeshaa kana guutummaatti haquu?",
+        confirmBan: "Fayyadamaa kana ugguruufi meeshaa isaa hunda haquu?",
+        banTitle: "Fayyadamaa ugguri",
+        banReasonLabel: "Sababa (dirqama miti, fayyadamaatti mul'ata)",
+        banReasonPlaceholder: "fkn. Sobaa, meeshaa dhorkamaa, ispaamii",
+        bannedOk: "Fayyadamaan uggurameera.",
+        unbannedOk: "Uggurri kaafameera.",
+        confirmUnban: "Uggura fayyadamaa kanaa kaasuu? Meeshaan haqame hin deebi'u.",
+        confirmSold: "Meeshaan kun akka gurgurameetti galmeessuu?",
+        rejectTitle: "Meeshaa kufisuu",
+        rejectReasonLabel: "Sababa (dirqama miti, gurgurtootatti mul'ata)",
+        rejectReasonPlaceholder: "fkn. Suuraan hin mul'atu, gatiin dogoggora",
+        cancel: "Dhiisi",
+        confirm: "Mirkaneessi",
+        allowDmPrompt: "MILKII APP waa'ee meeshaa keessanii ergaa akka isiniif ergu ni hayyamtuu?",
+        allowBtn: "Hayyami",
+        stepOf: "Tarkaanfii {step} / 6",
+        back: "Duubatti",
+        next: "Itti aanu",
+        submit: "Ergi",
+        submitting: "Ergamaa jira...",
+        step1Title: "Ramaddii filadhu",
+        step1Notice: "Meeshaa seeraan alaa, meeshaa waraanaa, qoricha sammuu hadoochu, meeshaa hatame ykn sobaa hin maxxansinaa.",
+        step2Title: "Suuraafi viidiyoo",
+        step2Desc: "Suuraa hanga 6 fi viidiyoo sekondii 10 tokko. Suuraan qulqulluun dafee gurgurama.",
+        photosCount: "Suuraa {n}/6",
+        videoCount: "Viidiyoo {n}/1",
+        addPhotos: "Suuraa dabali",
+        addVideo: "Viidiyoo dabali (<=10s)",
+        coverTag: "Fuuldura",
+        uploading: "Ol-ba'aa jira...",
+        failedRetry: "Kufe · Irra deebi'i",
+        errPhotoRead: "Suuraa tokko dubbisuun hin danda'amne.",
+        errPhotoMax: "Suuraa hanga 6 qofa fe'uu dandeessu.",
+        errPhotoBig: "Suuraan baay'ee guddaadha (max 10 MB).",
+        errVideoOne: "Viidiyoo 1 qofaatu hayyamama.",
+        errVideoBig: "Viidiyoon baay'ee guddaadha (max 30 MB).",
+        errVideoLong: "Viidiyoon sekondii 10 ykn isaa gadi ta'uu qaba.",
+        errWaitUploads: "Fe'iinsi hundi hanga xumuramutti eegaa.",
+        errNeedPhoto: "Yoo xiqqaate suuraa 1 fe'aa.",
+        step3Title: "Ibsa meeshaa",
+        step4Title: "Karoora filadhu",
+        planFree: "Bilisaa",
+        planFreeDesc: "Erga bulchaan mirkaneessee mul'ata",
+        planStandard: "Idilee (Standard)",
+        planStandardDesc: "Dursa ilaalama",
+        planFeatured: "Addaa (Featured)",
+        planFeaturedDesc: "Gubbaa irratti urjii ★ waliin mul'ata",
+        step5Title: "Kaffaltii harkaa",
+        chooseMethod: "Karaa kaffaltii",
+        payToAccount: "Birrii {amount} kanaatti ergaa:",
+        accountNumber: "Lakkoofsa herregaa / bilbilaa",
+        accountHolder: "Maqaa abbaa herregaa",
+        copyNumber: "Lakkoofsa garagalchi",
+        copied: "Garagalfameera!",
+        payRefLabel: "Lakkoofsa nagahee (Reference)",
+        payRefPlaceholder: "fkn. FT26123ABC ykn Telebirr ID",
+        receiptLabel: "Suuraa nagahee (Receipt) fe'i",
+        chooseReceipt: "Suuraa filadhu",
+        receiptReady: "Nagaheen qophaa'eera",
+        step6Title: "Mirkaneessiitii ergi",
+        confirmLegal: "Meeshaan kun seera qabeessaafi akkuma ibsame ta'uu mirkaneessa",
+        errConfirmLegal: "Mee seera qabeessa ta'uu mirkaneessaa.",
+        postedTitle: "Ergameera!",
+        postedDesc: "Meeshaan keessan ilaalama bulchaa eegaa jira. Erga mirkanaa'ee booda Itoophiyaa guutuutti MILKII APP irratti ni mul'ata.",
+        done: "Xumuri",
+        statusPending: "eegaa jira",
+        statusApproved: "mirkanaa'e",
+        statusRejected: "kufeera",
+        statusSold: "gurgurame",
+        reasonPrefix: "Sababa: ",
+        statTotal: "Waliigala",
+        statWaiting: "Eegaa",
+        statLive: "Mul'ataa",
+        statSold: "Gurgurame",
+        statReported: "Gabaafame",
+        statIncome: "Galii (Birrii)",
+        tabPending: "Eegaa",
+        tabReported: "Gabaafame",
+        tabAll: "Hunda",
+        btnView: "Ilaali",
+        btnReceipt: "Nagahee",
+        btnApprove: "Mirkaneessi",
+        btnReject: "Kufisi",
+        btnBan: "Ugguri",
+        btnUnban: "Uggura kaasi",
+        receiptTitle: "Nagahee kaffaltii",
+        aiWelcome: "Akkam! Meeshaa MILKII APP irraa Itoophiyaa guutuu keessaa barbaaduuf Afaan Oromoo, Amaariffa ykn Ingiliffaan na gaafadhaa. Kaffaluu dura qaamaan ilaaluu hin dagatinaa.",
+        aiPlaceholder: "Waan Itoophiyaa keessaa barbaaddan gaafadhaa...",
+        send: "Ergi",
+        reqErr: "Bakki kun guutamuu qaba.",
+        regionErr: "Maaloo naannoo filadhaa.",
+        cityErr: "Maqaan magaalaa arfii 2 hanga 40 ta'uu qaba.",
+        placeErr: "Gandi / naannoon max arfii 40 ta'uu qaba.",
+        titleErr: "Mata dureen arfii 3 hanga 60 ta'uu qaba.",
+        priceErr: "Gatii sirrii 0 hanga 100,000,000 galchaa.",
+        descErr: "Ibsi arfii 10 hanga 300 ta'uu qaba.",
+        payMethodErr: "CBE ykn Telebirr filadhaa.",
+        payRefErr: "Lakkoofsa nagahee sirrii galchaa.",
+        receiptErr: "Suuraa nagahee fe'aa.",
+        adminTabItems: "Meeshaalee",
+        adminTabUsers: "Fayyadamtoota",
+        adminTabAnalytics: "Xiinxala",
+        adminTabAudit: "Galmee (Audit)",
+        adminTabSettings: "Qindaa'ina",
+        usersSearchPlaceholder: "Maqaa fayyadamaa, maqaa ykn ID barbaadi...",
+        usersFilterAll: "Hunda",
+        usersFilterSellers: "Gurgurtoota",
+        usersFilterBanned: "Ugguraman",
+        usersEmpty: "Fayyadamaan walsimu hin argamne.",
+        usersItemsCount: "Meeshaa",
+        usersApprovedCount: "Mul'ataa",
+        usersLastSeen: "Yeroo dhumaa",
+        bannedBadge: "Uggurame",
+        staffBadge: "Hojjetaa",
+        loadMore: "Dabalata fe'i",
+        days7: "Guyyaa 7",
+        days30: "Guyyaa 30",
+        days90: "Guyyaa 90",
+        statUsers: "Fayyadamtoota",
+        statNewUsers: "Haaraa",
+        statActiveUsers: "Sichi'oo",
+        statApprovalRate: "Sadarkaa mirk.",
+        chartNewItemsPerDay: "Meeshaalee haaraa guyyaatti",
+        chartIncomePerDay: "Galii guyyaatti (Birrii)",
+        chartByCategory: "Ramaddii dhaan",
+        chartByRegion: "Naannoo dhaan",
+        chartTopCities: "Magaalota gurguddoo",
+        chartByPlan: "Karooraa fi galii",
+        chartNoData: "Ragaan amma hin jiru.",
+        auditEmpty: "Galmeen amma hin jiru.",
+        actItemApprove: "Meeshaa mirkaneesse",
+        actItemReject: "Meeshaa kufise",
+        actItemDelete: "Meeshaa haqe",
+        actUserBan: "Fayyadamaa uggure",
+        actUserUnban: "Uggura kaase",
+        actSettingsUpdate: "Qindaa'ina jijjiire",
+        actReceiptView: "Nagahee ilaale",
+        settingsPlansTitle: "Gatii karooraa (Birrii)",
+        settingsPaymentTitle: "Odeeffannoo kaffaltii",
+        settingsLimitsTitle: "Daangaawwan",
+        settingsFreeNote: "Bilisaa (yeroo hunda Birrii 0)",
+        settingsStandardFee: "Gatii karoora Idilee (Birrii)",
+        settingsFeaturedFee: "Gatii karoora Addaa (Birrii)",
+        settingsMethodLabel: "Maqaa mul'atu",
+        settingsAccountNumber: "Lakkoofsa herregaa / bilbilaa",
+        settingsHolderName: "Maqaa abbaa herregaa",
+        settingsMaxPending: "Max meeshaa eegaa gurguraa tokkotti",
+        settingsAiDaily: "Gaaffii AI guyyaatti fayyadamaaf",
+        settingsUploadDaily: "Ol-baasii guyyaatti fayyadamaaf",
+        settingsSaveBtn: "Qindaa'ina ol-kaayi",
+        settingsSaving: "Ol-kaa'amaa jira...",
+        settingsSaveConfirm: "Gurgurtoonni lakkoofsa kaffaltii haaraa battalumatti argu. Ol-kaa'uu?",
+        settingsSavedOk: "Qindaa'inni ol-kaa'ameera.",
+        settingsOwnerOnlyNote: "Abbaa qabeenyaa qofatu qindaa'ina jijjiiruu danda'a.",
+        settingsErrFee: "Gatiin lakkoofsa guutuu 0 hanga 100000 ta'uu qaba (Bilisaa 0 ta'a).",
+        settingsErrLimit: "Daangaan lakkoofsa guutuu 1 hanga 1000 ta'uu qaba.",
+        settingsErrPay: "Odeeffannoo kaffaltii hunda sirriitti guutaa."
+      },
+      am: {
+        openFromTg: "Please open MILKII APP from Telegram.",
+        navBrowse: "ገበያ",
+        navSaved: "የተቀመጡ",
+        navMine: "የእኔ",
+        navAi: "AI",
+        navAdmin: "አስተዳዳሪ",
+        searchPlaceholder: "እቃ፣ ከተማ፣ ክልል፣ ብራንድ ይፈልጉ...",
+        allEthiopia: "መላው ኢትዮጵያ",
+        cityFilterPlaceholder: "ከተማ ይፈልጉ...",
+        allCats: "ሁሉም",
+        postItem: "እቃ ለጥፍ",
+        loading: "MILKII APP በመክፈት ላይ...",
+        emptyBrowse: "ምንም እቃ አልተገኘም። የመጀመሪያው ይሁኑ!",
+        emptySaved: "እስካሁን የተቀመጠ እቃ የለም።",
+        emptyMine: "እስካሁን ምንም እቃ አልለጠፉም።",
+        emptyAdmin: "በዚህ ክፍል ምንም እቃ የለም።",
+        birr: "ብር",
+        negotiable: "ድርድር አለው",
+        startingPrice: "መነሻ ዋጋ (ብር)",
+        priceLabel: "ዋጋ (ብር)",
+        titleLabel: "ርዕስ",
+        regionLabel: "ክልል / ከተማ አስተዳደር",
+        selectRegionOption: "ክልል ይምረጡ",
+        cityLabel: "ከተማ",
+        cityPlaceholder: "ከተማ ይጻፉ ወይም ከታች ይምረጡ",
+        placeLabel: "ሰፈር / አካባቢ (አማራጭ)",
+        placePlaceholder: "ምሳሌ፡ ቦሌ፣ ፒያሳ፣ ቀበሌ 05",
+        descLabel: "ዝርዝር መግለጫ",
+        negotiableLabel: "ዋጋው ይደራደራል",
+        sellerTgLabel: "የእርስዎ Telegram username",
+        noTgUsername: "ለመለጠፍ Telegram username ያስፈልጋል። Telegram Settings > Username ውስጥ አዘጋጅተው እንደገና MILKII APP ይክፈቱ።",
+        detailsHeading: "ዝርዝር መረጃ",
+        messageSeller: "ሻጩን ያናግሩ",
+        translateHeading: "በ AI ተርጉም",
+        translating: "በመተርጎም ላይ...",
+        save: "አስቀምጥ",
+        unsave: "ተቀምጧል ✓",
+        report: "ሪፖርት አድርግ",
+        reportedOk: "ሪፖርት ተልኳል። አስተዳዳሪው ያየዋል።",
+        close: "ዝጋ",
+        markSold: "ተሽጧል",
+        deleteBtn: "ሰርዝ",
+        confirmDelete: "ይህን እቃ እስከመጨረሻው ይሰረዝ?",
+        confirmBan: "ይህ ሻጭ ይታገድ እና ሁሉም እቃዎቹ ይሰረዙ?",
+        banTitle: "ተጠቃሚን አግድ",
+        banReasonLabel: "ምክንያት (አማራጭ፣ ለተጠቃሚው ይታያል)",
+        banReasonPlaceholder: "ምሳሌ፡ ማጭበርበር፣ የተከለከለ እቃ፣ ስፓም",
+        bannedOk: "ተጠቃሚው ታግዷል።",
+        unbannedOk: "እገዳው ተነስቷል።",
+        confirmUnban: "የዚህን ተጠቃሚ እገዳ ያንሱ? የተሰረዙ እቃዎች አይመለሱም።",
+        confirmSold: "ይህ እቃ እንደተሸጠ ምልክት ይደረግ?",
+        rejectTitle: "ማስታወቂያውን ውድቅ አድርግ",
+        rejectReasonLabel: "ምክንያት (አማራጭ፣ ለሻጩ ይታያል)",
+        rejectReasonPlaceholder: "ምሳሌ፡ ግልጽ ያልሆነ ፎቶ፣ የተሳሳተ ዋጋ",
+        cancel: "ተው",
+        confirm: "አረጋግጥ",
+        allowDmPrompt: "MILKII APP ስለ እቃዎችዎ መልዕክት እንዲልክልዎ ይፈቅዳሉ?",
+        allowBtn: "ፍቀድ",
+        stepOf: "ደረጃ {step} ከ 6",
+        back: "ተመለስ",
+        next: "ቀጣይ",
+        submit: "ላክ",
+        submitting: "በመላክ ላይ...",
+        step1Title: "ምድብ ይምረጡ",
+        step1Notice: "ህገ-ወጥ እቃዎችን፣ የጦር መሳሪያ፣ አደንዛዥ እጽ፣ የተሰረቀ ወይም ሀሰተኛ እቃ አይለጥፉ።",
+        step2Title: "ፎቶ እና ቪዲዮ",
+        step2Desc: "እስከ 6 ፎቶ እና አንድ የ10 ሰከንድ ቪዲዮ። ጥሩ ፎቶ ፈጥኖ ይሸጣል።",
+        photosCount: "ፎቶ {n}/6",
+        videoCount: "ቪዲዮ {n}/1",
+        addPhotos: "ፎቶ ጨምር",
+        addVideo: "ቪዲዮ ጨምር (<=10s)",
+        coverTag: "ዋና",
+        uploading: "በመጫን ላይ...",
+        failedRetry: "አልተሳካም · ድገም",
+        errPhotoRead: "ፎቶውን ማንበብ አልተቻለም።",
+        errPhotoMax: "ቢበዛ 6 ፎቶዎችን ብቻ መጫን ይችላሉ።",
+        errPhotoBig: "ፎቶው በጣም ትልቅ ነው (ከፍተኛው 10 MB)።",
+        errVideoOne: "በአንድ እቃ 1 ቪዲዮ ብቻ ይፈቀዳል።",
+        errVideoBig: "ቪዲዮው በጣም ትልቅ ነው (ከፍተኛው 30 MB)።",
+        errVideoLong: "ቪዲዮው 10 ሰከንድ ወይም ከዚያ በታች መሆን አለበት።",
+        errWaitUploads: "ሁሉም ፋይሎች ተጭነው እስኪጨርሱ ይጠብቁ።",
+        errNeedPhoto: "ቢያንስ 1 ፎቶ ይጫኑ።",
+        step3Title: "የእቃው ዝርዝር",
+        step4Title: "እቅድ ይምረጡ",
+        planFree: "ነጻ (Free)",
+        planFreeDesc: "አስተዳዳሪው ካጸደቀው በኋላ ይታያል",
+        planStandard: "መደበኛ (Standard)",
+        planStandardDesc: "ቅድሚያ ይገመገማል",
+        planFeatured: "ልዩ (Featured)",
+        planFeaturedDesc: "ከኮከብ ★ ጋር ከላይ ይታያል",
+        step5Title: "የእጅ ክፍያ",
+        chooseMethod: "የክፍያ ዘዴ",
+        payToAccount: "{amount} ብር ወደዚህ ይላኩ:",
+        accountNumber: "አካውንት / ስልክ ቁጥር",
+        accountHolder: "የአካውንት ባለቤት",
+        copyNumber: "ቁጥሩን ቅዳ",
+        copied: "ተቀድቷል!",
+        payRefLabel: "የግብይት መለያ (Transaction Reference)",
+        payRefPlaceholder: "ምሳሌ፡ FT26123ABC ወይም Telebirr ID",
+        receiptLabel: "የደረሰኝ ፎቶ (Screenshot) ይጫኑ",
+        chooseReceipt: "ፎቶ ይምረጡ",
+        receiptReady: "ደረሰኝ ተያይዟል",
+        step6Title: "ይገምግሙ እና ይላኩ",
+        confirmLegal: "ይህ እቃ ህጋዊ እና እንደተገለጸው መሆኑን አረጋግጣለሁ",
+        errConfirmLegal: "እባክዎ እቃው ህጋዊ መሆኑን ያረጋግጡ።",
+        postedTitle: "ተልኳል!",
+        postedDesc: "ማስታወቂያዎ የአስተዳዳሪ ማረጋገጫ በመጠባበቅ ላይ ነው። ከጸደቀ በኋላ በመላው ኢትዮጵያ በ MILKII APP ላይ ይታያል።",
+        done: "ጨርስ",
+        statusPending: "በመጠባበቅ ላይ",
+        statusApproved: "ጸድቋል",
+        statusRejected: "ውድቅ ተደርጓል",
+        statusSold: "ተሽጧል",
+        reasonPrefix: "ምክንያት: ",
+        statTotal: "ጠቅላላ",
+        statWaiting: "በመጠባበቅ",
+        statLive: "የሚታዩ",
+        statSold: "የተሸጡ",
+        statReported: "ሪፖርት",
+        statIncome: "ገቢ (ብር)",
+        tabPending: "በመጠባበቅ",
+        tabReported: "ሪፖርት",
+        tabAll: "ሁሉም",
+        btnView: "ይመልከቱ",
+        btnReceipt: "ደረሰኝ",
+        btnApprove: "አጽድቅ",
+        btnReject: "ውድቅ አድርግ",
+        btnBan: "አግድ",
+        btnUnban: "እገዳ አንሳ",
+        receiptTitle: "የክፍያ ደረሰኝ",
+        aiWelcome: "ሰላም! በአማርኛ፣ በኦሮምኛ ወይም በእንግሊዝኛ በመላው ኢትዮጵያ በ MILKII APP ላይ እቃዎችን እንድፈልግልዎ ይጠይቁኝ። ከመክፈልዎ በፊት እቃውን በአካል ማየትዎን አይርሱ።",
+        aiPlaceholder: "በኢትዮጵያ ውስጥ የሚፈልጉትን ይጠይቁ...",
+        send: "ላክ",
+        reqErr: "ይህ ቦታ መሞላት አለበት።",
+        regionErr: "እባክዎ ክልል ይምረጡ።",
+        cityErr: "የከተማ ስም ከ2 እስከ 40 ፊደላት መሆን አለበት።",
+        placeErr: "ሰፈር / አካባቢ ከ40 ፊደላት መብለጥ የለበትም።",
+        titleErr: "ርዕሱ ከ3 እስከ 60 ፊደላት መሆን አለበት።",
+        priceErr: "ከ0 እስከ 100,000,000 ሙሉ ቁጥር ያስገቡ።",
+        descErr: "መግለጫው ከ10 እስከ 300 ፊደላት መሆን አለበት።",
+        payMethodErr: "CBE ወይም Telebirr ይምረጡ።",
+        payRefErr: "የግብይት መለያ ያስገቡ።",
+        receiptErr: "የክፍያ ደረሰኝ ፎቶ ይጫኑ።",
+        adminTabItems: "እቃዎች",
+        adminTabUsers: "ተጠቃሚዎች",
+        adminTabAnalytics: "ትንታኔ",
+        adminTabAudit: "ኦዲት (Audit)",
+        adminTabSettings: "ቅንብሮች",
+        usersSearchPlaceholder: "username፣ ስም ወይም ID ይፈልጉ...",
+        usersFilterAll: "ሁሉም",
+        usersFilterSellers: "ሻጮች",
+        usersFilterBanned: "የታገዱ",
+        usersEmpty: "ምንም ተጠቃሚ አልተገኘም።",
+        usersItemsCount: "እቃዎች",
+        usersApprovedCount: "የሚታዩ",
+        usersLastSeen: "መጨረሻ የታየበት",
+        bannedBadge: "ታግዷል",
+        staffBadge: "አስተዳዳሪ",
+        loadMore: "ተጨማሪ ጫን",
+        days7: "7 ቀናት",
+        days30: "30 ቀናት",
+        days90: "90 ቀናት",
+        statUsers: "ተጠቃሚዎች",
+        statNewUsers: "አዲስ",
+        statActiveUsers: "ንቁ",
+        statApprovalRate: "የማጽደቅ ምጣኔ",
+        chartNewItemsPerDay: "አዲስ እቃዎች በቀን",
+        chartIncomePerDay: "ገቢ በቀን (ብር)",
+        chartByCategory: "በምድብ",
+        chartByRegion: "በክልል",
+        chartTopCities: "ከፍተኛ ከተሞች",
+        chartByPlan: "እቅዶች እና ገቢ",
+        chartNoData: "እስካሁን መረጃ የለም።",
+        auditEmpty: "እስካሁን የኦዲት መዝገብ የለም።",
+        actItemApprove: "እቃ አጸደቀ",
+        actItemReject: "እቃ ውድቅ አደረገ",
+        actItemDelete: "እቃ ሰረዘ",
+        actUserBan: "ተጠቃሚ አገደ",
+        actUserUnban: "እገዳ አነሳ",
+        actSettingsUpdate: "ቅንብሮችን አሻሻለ",
+        actReceiptView: "ደረሰኝ አየ",
+        settingsPlansTitle: "የእቅድ ዋጋዎች (ብር)",
+        settingsPaymentTitle: "የክፍያ መረጃ",
+        settingsLimitsTitle: "ገደቦች",
+        settingsFreeNote: "ነጻ (ሁልጊዜ 0 ብር)",
+        settingsStandardFee: "የመደበኛ እቅድ ዋጋ (ብር)",
+        settingsFeaturedFee: "የልዩ እቅድ ዋጋ (ብር)",
+        settingsMethodLabel: "የሚታይ ስም",
+        settingsAccountNumber: "አካውንት / ስልክ ቁጥር",
+        settingsHolderName: "የአካውንት ባለቤት ስም",
+        settingsMaxPending: "ለአንድ ሻጭ ከፍተኛው በመጠባበቅ ላይ ያሉ እቃዎች",
+        settingsAiDaily: "በቀን የ AI ጥያቄ ገደብ",
+        settingsUploadDaily: "በቀን የፋይል መጫኛ ገደብ",
+        settingsSaveBtn: "ቅንብሮችን አስቀምጥ",
+        settingsSaving: "በማስቀመጥ ላይ...",
+        settingsSaveConfirm: "ሻጮች አዲሱን የክፍያ ቁጥር ወዲያውኑ ያያሉ። ይቀመጥ?",
+        settingsSavedOk: "ቅንብሮች ተቀምጠዋል።",
+        settingsOwnerOnlyNote: "ቅንብሮችን መቀየር የሚችለው ባለቤቱ ብቻ ነው።",
+        settingsErrFee: "ዋጋዎች ከ0 እስከ 100000 ሙሉ ቁጥር መሆን አለባቸው (ነጻ 0 ነው)።",
+        settingsErrLimit: "ገደቦች ከ1 እስከ 1000 ሙሉ ቁጥር መሆን አለባቸው።",
+        settingsErrPay: "ሁሉንም የክፍያ መረጃዎች በትክክል ይሙሉ።"
+      }
+    };
+
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    if (tg) {
+      try { tg.ready(); } catch {}
+      try { tg.expand(); } catch {}
+    }
+    const initData = tg && tg.initData ? tg.initData : "";
+
+    if (!initData) {
+      document.getElementById("root").innerHTML =
+        '<div class="gate-message">Please open MILKII APP from Telegram.</div>';
+    } else {
+
+      const applyTgTheme = () => {
+        if (tg.colorScheme === "dark") {
+          document.documentElement.setAttribute("data-theme", "dark");
+        } else if (tg.colorScheme === "light") {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      };
+      applyTgTheme();
+      if (tg.onEvent) tg.onEvent("themeChanged", applyTgTheme);
+
+      const savedLang = localStorage.getItem("milkii_lang");
+      const savedRegion = localStorage.getItem("milkii_region") || "";
+      const state = {
+        lang: savedLang === "om" || savedLang === "am" ? savedLang : "en",
+        view: "browse",
+        config: null,
+        me: null,
+        items: [],
+        itemsLoading: true,
+        mine: [],
+        mineLoading: false,
+        adminItems: [],
+        adminStats: null,
+        adminTab: "pending",
+        adminSection: "items",
+        adminLoading: false,
+        users: [],
+        usersTotal: 0,
+        usersQuery: "",
+        usersFilter: "all",
+        usersLoading: false,
+        analytics: null,
+        analyticsDays: 30,
+        analyticsLoading: false,
+        auditRows: [],
+        auditNext: null,
+        auditLoading: false,
+        settingsDraft: null,
+        settingsLoading: false,
+        settingsSaving: false,
+        settingsError: "",
+        search: "",
+        regionFilter: savedRegion,
+        cityFilter: "",
+        catFilter: "all",
+        saved: loadSavedItems(),
+        aiMessages: [],
+        aiBusy: false,
+        post: createEmptyPost()
+      };
+
+      function createEmptyPost() {
+        return {
+          step: 1,
+          cat: "",
+          media: [],
+          attrs: {},
+          region: "",
+          city: "",
+          place: "",
+          title: "",
+          price: "",
+          negotiable: false,
+          desc: "",
+          errors: {},
+          plan: "free",
+          payMethod: "CBE",
+          payRef: "",
+          receiptDataUrl: "",
+          confirmLegal: false,
+          submitting: false,
+          submitted: false
+        };
+      }
+
+      function loadSavedItems() {
+        try {
+          const raw = localStorage.getItem("milkii_saved");
+          const parsed = JSON.parse(raw || "[]");
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function persistSavedItems() {
+        try {
+          localStorage.setItem("milkii_saved", JSON.stringify(state.saved));
+        } catch {}
+      }
+
+      function t(key, vars) {
+        const dict = I18N[state.lang] || I18N.en;
+        let str = dict[key] || I18N.en[key] || key;
+        if (vars) {
+          for (const k of Object.keys(vars)) {
+            str = str.replace(new RegExp("\\{" + k + "\\}", "g"), String(vars[k]));
+          }
+        }
+        return str;
+      }
+
+      function lval(obj) {
+        if (!obj) return "";
+        if (typeof obj === "string") return obj;
+        return obj[state.lang] || obj.en || "";
+      }
+
+      function esc(str) {
+        return String(str === null || str === undefined ? "" : str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function formatPrice(n) {
+        return Number(n || 0).toLocaleString("en-US") + " " + t("birr");
+      }
+
+      function getRegions() {
+        return state.config && Array.isArray(state.config.regions) ? state.config.regions : [];
+      }
+
+      function getRegionObj(regionVal) {
+        return getRegions().find((r) => r.v === regionVal) || null;
+      }
+
+      function getRegionLabel(regionVal) {
+        const reg = getRegionObj(regionVal);
+        return reg ? lval(reg) : String(regionVal || "");
+      }
+
+      function formatItemLocation(it) {
+        const regLabel = it.region ? getRegionLabel(it.region) : "";
+        const parts = [];
+        if (it.city) parts.push(it.city);
+        if (it.place) parts.push(it.place);
+        if (regLabel) parts.push(regLabel);
+        return parts.join(", ");
+      }
+
+      let toastTimer = null;
+      function showToast(msg) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
+      }
+
+      async function api(path, options = {}) {
+        const headers = Object.assign({}, options.headers || {}, {
+          "X-Init-Data": initData,
+          "X-Lang": state.lang
+        });
+        if (options.body && !(options.body instanceof FormData) && !headers["Content-Type"]) {
+          headers["Content-Type"] = "application/json";
+        }
+        const res = await fetch(path, Object.assign({}, options, { headers }));
+        const ct = res.headers.get("content-type") || "";
+        if (ct.includes("application/json")) {
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Request failed");
+          }
+          return data;
+        }
+        if (!res.ok) {
+          throw new Error("Request failed");
+        }
+        return res;
+      }
+
+      function cloudThumbUrl(id) {
+        const cloud = state.config ? state.config.cloud_name : "";
+        return `https://res.cloudinary.com/${encodeURIComponent(cloud)}/image/upload/c_fill,w_400,h_400,q_auto,f_auto/${id}`;
+      }
+
+      function cloudFullUrl(id) {
+        const cloud = state.config ? state.config.cloud_name : "";
+        return `https://res.cloudinary.com/${encodeURIComponent(cloud)}/image/upload/w_1000,q_auto,f_auto/${id}`;
+      }
+
+      function cloudVideoUrl(id) {
+        const cloud = state.config ? state.config.cloud_name : "";
+        return `https://res.cloudinary.com/${encodeURIComponent(cloud)}/video/upload/q_auto/${id}.mp4`;
+      }
+
+      function cloudVideoPosterUrl(id) {
+        const cloud = state.config ? state.config.cloud_name : "";
+        return `https://res.cloudinary.com/${encodeURIComponent(cloud)}/video/upload/so_0,w_800,c_fill,h_800/${id}.jpg`;
+      }
+
+      function getCoverImage(media) {
+        if (!Array.isArray(media)) return null;
+        return media.find((m) => m && m.type === "image") || null;
+      }
+
+      function hasVideoMedia(media) {
+        return Array.isArray(media) && media.some((m) => m && m.type === "video");
+      }
+
+      function getOptionText(field, val) {
+        if (!field || !Array.isArray(field.options)) return String(val || "");
+        const opt = field.options.find((o) => o.v === val);
+        return opt ? lval(opt) : String(val || "");
+      }
+
+      function formatFieldValue(catKey, field, rawVal) {
+        if (rawVal === undefined || rawVal === null || rawVal === "") return "";
+        if (field.type === "select") {
+          return getOptionText(field, rawVal);
+        }
+        if (field.type === "multiselect" && Array.isArray(rawVal)) {
+          return rawVal.map((v) => getOptionText(field, v)).join(", ");
+        }
+        return String(rawVal);
+      }
+
+      function getCardSummary(item) {
+        const cat = state.config && state.config.categories[item.cat];
+        if (!cat || !Array.isArray(cat.card)) return "";
+        const attrs = item.attrs || {};
+        const parts = [];
+        for (const key of cat.card) {
+          const field = cat.fields.find((f) => f.key === key);
+          if (!field) continue;
+          const val = attrs[key];
+          if (val === undefined || val === null || val === "") continue;
+          if (item.cat === "food" && key === "quantity") {
+            const unitField = cat.fields.find((f) => f.key === "unit");
+            const unitTxt = unitField && attrs.unit ? getOptionText(unitField, attrs.unit) : "";
+            parts.push(`${val}${unitTxt ? " " + unitTxt : ""}`);
+          } else {
+            parts.push(formatFieldValue(item.cat, field, val));
+          }
+        }
+        return parts.join(" · ");
+      }
+
+      function isSaved(id) {
+        return state.saved.some((s) => s.id === id);
+      }
+
+      function toggleSave(item) {
+        const idx = state.saved.findIndex((s) => s.id === item.id);
+        if (idx >= 0) {
+          state.saved.splice(idx, 1);
+        } else {
+          state.saved.unshift(item);
+        }
+        persistSavedItems();
+      }
+
+      function syncSavedWithLive() {
+        const byId = new Map(state.items.map((it) => [it.id, it]));
+        state.saved = state.saved.map((s) => byId.get(s.id) || s);
+        persistSavedItems();
+      }
+
+      function itemMatchesFilters(item) {
+        if (state.catFilter !== "all" && item.cat !== state.catFilter) return false;
+        if (state.regionFilter && item.region !== state.regionFilter) return false;
+        const cityNeedle = state.cityFilter.trim().toLowerCase();
+        if (cityNeedle) {
+          const itemCity = String(item.city || "").toLowerCase();
+          if (!itemCity.includes(cityNeedle)) return false;
+        }
+        const q = state.search.trim().toLowerCase();
+        if (!q) return true;
+
+        const cat = state.config && state.config.categories[item.cat];
+        const parts = [
+          item.title,
+          item.desc,
+          item.region,
+          getRegionLabel(item.region),
+          item.city,
+          item.place,
+          cat ? lval(cat.label) : ""
+        ];
+        const attrs = item.attrs || {};
+        if (cat) {
+          for (const f of cat.fields) {
+            const v = attrs[f.key];
+            if (v !== undefined && v !== null) {
+              parts.push(Array.isArray(v) ? v.join(" ") : String(v));
+              parts.push(formatFieldValue(item.cat, f, v));
+            }
+          }
+        } else {
+          parts.push(JSON.stringify(attrs));
+        }
+        return parts.join(" ").toLowerCase().includes(q);
+      }
+
+      function renderHeader() {
+        const isAdmin = Boolean(state.me && state.me.isAdmin);
+        const navs = [
+          { id: "browse", label: t("navBrowse") },
+          { id: "saved", label: `${t("navSaved")} (${state.saved.length})` },
+          { id: "mine", label: t("navMine") },
+          { id: "ai", label: t("navAi") }
+        ];
+        if (isAdmin) {
+          navs.push({ id: "admin", label: t("navAdmin") });
+        }
+        return `
+          <header class="topbar">
+            <div class="topbar-row">
+              <div class="brand">
+                <span>🛒 MILKII APP</span>
+              </div>
+              <select id="langSelect" class="lang-select" aria-label="Language">
+                <option value="en"${state.lang === "en" ? " selected" : ""}>English</option>
+                <option value="om"${state.lang === "om" ? " selected" : ""}>Afaan Oromoo</option>
+                <option value="am"${state.lang === "am" ? " selected" : ""}>አማርኛ</option>
+              </select>
+            </div>
+            <nav class="nav-bar">
+              ${navs
+                .map(
+                  (n) =>
+                    `<button type="button" class="nav-btn${
+                      state.view === n.id ? " active" : ""
+                    }" data-nav="${esc(n.id)}">${esc(n.label)}</button>`
+                )
+                .join("")}
+            </nav>
+          </header>
+        `;
+      }
+
+      function renderCard(item) {
+        const cat = state.config && state.config.categories[item.cat];
+        const cover = getCoverImage(item.media);
+        const hasVid = hasVideoMedia(item.media);
+        const summary = getCardSummary(item);
+        const regionLbl = item.region ? getRegionLabel(item.region) : "";
+        const cityDisplay = item.city || item.place || "";
+        return `
+          <article class="card" data-open-item="${esc(item.id)}">
+            <div class="card-media">
+              ${
+                cover
+                  ? `<img src="${esc(cloudThumbUrl(cover.id))}" alt="${esc(item.title)}" loading="lazy" />`
+                  : `<span class="card-emoji">${esc(cat ? cat.emoji : "📦")}</span>`
+              }
+              ${item.featured ? `<span class="badge-star">★</span>` : ""}
+              ${hasVid ? `<span class="badge-play">▶</span>` : ""}
+            </div>
+            <div class="card-body">
+              <span class="price-tag">${esc(formatPrice(item.price))}</span>
+              <div class="card-title">${esc(item.title)}</div>
+              ${cityDisplay ? `<div class="card-meta">📍 ${esc(cityDisplay)}</div>` : ""}
+              ${regionLbl ? `<div class="card-region">${esc(regionLbl)}</div>` : ""}
+              ${summary ? `<div class="card-summary">${esc(summary)}</div>` : ""}
+            </div>
+          </article>
+        `;
+      }
+
+      function renderBrowseView() {
+        const cats = state.config ? state.config.categories : {};
+        const regions = getRegions();
+        const filtered = state.items.filter(itemMatchesFilters);
+
+        return `
+          <div class="search-wrap">
+            <div class="search-box">
+              <input id="searchInput" class="search-input" type="search" value="${esc(state.search)}" placeholder="${esc(t("searchPlaceholder"))}" />
+              ${state.search ? `<button type="button" id="clearSearchBtn" class="clear-search" aria-label="Clear">✕</button>` : ""}
+            </div>
+          </div>
+          <div class="loc-filter-row">
+            <select id="regionFilter" class="loc-select" aria-label="${esc(t("regionLabel"))}">
+              <option value="">${esc(t("allEthiopia"))}</option>
+              ${regions
+                .map(
+                  (r) =>
+                    `<option value="${esc(r.v)}"${state.regionFilter === r.v ? " selected" : ""}>${esc(lval(r))}</option>`
+                )
+                .join("")}
+            </select>
+            <input id="cityFilter" class="loc-input" type="search" value="${esc(state.cityFilter)}" placeholder="${esc(t("cityFilterPlaceholder"))}" />
+          </div>
+          <div class="chips-wrap">
+            <button type="button" class="chip${state.catFilter === "all" ? " active" : ""}" data-cat="all">${esc(t("allCats"))}</button>
+            ${Object.keys(cats)
+              .map(
+                (key) => `
+                  <button type="button" class="chip${state.catFilter === key ? " active" : ""}" data-cat="${esc(key)}">
+                    <span>${esc(cats[key].emoji)}</span>
+                    <span>${esc(lval(cats[key].label))}</span>
+                  </button>`
+              )
+              .join("")}
+          </div>
+          <main class="content">
+            ${
+              state.itemsLoading
+                ? `<div class="state-box"><span class="emoji">⏳</span>${esc(t("loading"))}</div>`
+                : filtered.length === 0
+                ? `<div class="state-box"><span class="emoji">🔍</span>${esc(t("emptyBrowse"))}</div>`
+                : `<div class="grid">${filtered.map(renderCard).join("")}</div>`
+            }
+          </main>
+          <div class="fab-wrap">
+            <button type="button" id="startPostBtn" class="fab-btn">＋ ${esc(t("postItem"))}</button>
+          </div>
+        `;
+      }
+
+      function renderSavedView() {
+        return `
+          <main class="content">
+            ${
+              state.saved.length === 0
+                ? `<div class="state-box"><span class="emoji">💛</span>${esc(t("emptySaved"))}</div>`
+                : `<div class="grid">${state.saved.map(renderCard).join("")}</div>`
+            }
+          </main>
+          <div class="fab-wrap">
+            <button type="button" id="startPostBtn" class="fab-btn">＋ ${esc(t("postItem"))}</button>
+          </div>
+        `;
+      }
+
+      function renderMineView() {
+        const cats = state.config ? state.config.categories : {};
+        return `
+          <main class="content">
+            ${
+              state.mineLoading
+                ? `<div class="state-box"><span class="emoji">⏳</span>${esc(t("loading"))}</div>`
+                : state.mine.length === 0
+                ? `<div class="state-box"><span class="emoji">📦</span>${esc(t("emptyMine"))}</div>`
+                : `<div class="list-stack">
+                    ${state.mine
+                      .map((it) => {
+                        const cover = getCoverImage(it.media);
+                        const cat = cats[it.cat];
+                        const loc = formatItemLocation(it);
+                        const stClass =
+                          it.status === "approved"
+                            ? "st-approved"
+                            : it.status === "rejected"
+                            ? "st-rejected"
+                            : it.status === "sold"
+                            ? "st-sold"
+                            : "st-pending";
+                        const stText =
+                          it.status === "approved"
+                            ? t("statusApproved")
+                            : it.status === "rejected"
+                            ? t("statusRejected")
+                            : it.status === "sold"
+                            ? t("statusSold")
+                            : t("statusPending");
+                        return `
+                          <div class="row-card">
+                            <div class="row-main">
+                              <div class="row-thumb">
+                                ${
+                                  cover
+                                    ? `<img src="${esc(cloudThumbUrl(cover.id))}" alt="" loading="lazy" />`
+                                    : esc(cat ? cat.emoji : "📦")
+                                }
+                              </div>
+                              <div class="row-info">
+                                <div class="row-title">${esc(it.title)}</div>
+                                <div class="row-sub">${esc(formatPrice(it.price))}${loc ? " · " + esc(loc) : ""}</div>
+                                <span class="status-badge ${stClass}">${esc(stText)}</span>
+                                ${
+                                  it.status === "rejected" && it.reject_reason
+                                    ? `<div class="field-error">${esc(t("reasonPrefix") + it.reject_reason)}</div>`
+                                    : ""
+                                }
+                              </div>
+                            </div>
+                            <div class="row-actions">
+                              ${
+                                it.status !== "sold"
+                                  ? `<button type="button" class="btn btn-sm" data-mine-sold="${esc(it.id)}">${esc(t("markSold"))}</button>`
+                                  : ""
+                              }
+                              <button type="button" class="btn btn-sm btn-danger" data-mine-delete="${esc(it.id)}">${esc(t("deleteBtn"))}</button>
+                            </div>
+                          </div>
+                        `;
+                      })
+                      .join("")}
+                  </div>`
+            }
+          </main>
+          <div class="fab-wrap">
+            <button type="button" id="startPostBtn" class="fab-btn">＋ ${esc(t("postItem"))}</button>
+          </div>
+        `;
+      }
+
+      function formatDateTime(ts) {
+        if (!ts) return "-";
+        try {
+          return new Date(Number(ts) * 1000).toLocaleString();
+        } catch {
+          return String(ts);
+        }
+      }
+
+      function renderBarChartSvg(rows, valueKey, titleText, totalText) {
+        if (!Array.isArray(rows) || rows.length === 0) {
+          return `
+            <div class="chart-card">
+              <div class="chart-head">
+                <strong>${esc(titleText)}</strong>
+                <span class="chart-meta">${esc(totalText)}</span>
+              </div>
+              <div style="color:var(--text-muted);font-size:13px;">${esc(t("chartNoData"))}</div>
+            </div>
+          `;
+        }
+        const vals = rows.map((r) => Number(r[valueKey] || 0));
+        const maxVal = Math.max(1, ...vals);
+        const w = 320;
+        const h = 110;
+        const padBottom = 18;
+        const plotH = h - padBottom - 8;
+        const step = w / rows.length;
+        const barW = Math.max(2, step - (rows.length > 35 ? 1 : 2));
+        const bars = rows
+          .map((r, i) => {
+            const v = Number(r[valueKey] || 0);
+            const barH = v > 0 ? Math.max(2, Math.round((v / maxVal) * plotH)) : 0;
+            const x = Number((i * step + (step - barW) / 2).toFixed(2));
+            const y = h - padBottom - barH;
+            return `<rect x="${x}" y="${y}" width="${barW.toFixed(2)}" height="${barH}" rx="1.5" fill="var(--primary)"><title>${esc(r.day)}: ${esc(v)}</title></rect>`;
+          })
+          .join("");
+        const firstDay = rows[0]?.day || "";
+        const lastDay = rows[rows.length - 1]?.day || "";
+        return `
+          <div class="chart-card">
+            <div class="chart-head">
+              <strong>${esc(titleText)}</strong>
+              <span class="chart-meta">${esc(totalText)} · Max ${esc(maxVal.toLocaleString("en-US"))}</span>
+            </div>
+            <svg viewBox="0 0 ${w} ${h}" width="100%" height="120" role="img" aria-label="${esc(titleText)}">
+              <line x1="0" y1="${h - padBottom}" x2="${w}" y2="${h - padBottom}" stroke="var(--border)" stroke-width="1" />
+              ${bars}
+              <text x="0" y="${h - 4}" font-size="9" fill="var(--text-muted)">${esc(firstDay)}</text>
+              <text x="${w}" y="${h - 4}" text-anchor="end" font-size="9" fill="var(--text-muted)">${esc(lastDay)}</text>
+            </svg>
+          </div>
+        `;
+      }
+
+      function renderHorizontalBars(titleText, rows, getLabel, getRightText, getCount) {
+        if (!Array.isArray(rows) || rows.length === 0) {
+          return `
+            <div class="chart-card">
+              <div class="chart-head"><strong>${esc(titleText)}</strong></div>
+              <div style="color:var(--text-muted);font-size:13px;">${esc(t("chartNoData"))}</div>
+            </div>
+          `;
+        }
+        const maxCnt = Math.max(1, ...rows.map((r) => Number(getCount(r) || 0)));
+        return `
+          <div class="chart-card">
+            <div class="chart-head"><strong>${esc(titleText)}</strong></div>
+            ${rows
+              .map((r) => {
+                const cnt = Number(getCount(r) || 0);
+                const pct = Math.round((cnt / maxCnt) * 100);
+                return `
+                  <div class="hbar-row">
+                    <div class="hbar-label-row">
+                      <span>${esc(getLabel(r))}</span>
+                      <span>${esc(getRightText(r))}</span>
+                    </div>
+                    <div class="hbar-track">
+                      <div class="hbar-fill" style="width:${pct}%"></div>
+                    </div>
+                  </div>
+                `;
+              })
+              .join("")}
+          </div>
+        `;
+      }
+
+      function renderAdminItemsSection() {
+        const stats = state.adminStats || {
+          total: 0,
+          pending: 0,
+          approved: 0,
+          sold: 0,
+          reported: 0,
+          income: 0
+        };
+        const cats = state.config ? state.config.categories : {};
+        return `
+          <div class="stats-grid">
+            <div class="stat-box"><div class="stat-val">${esc(stats.total)}</div><div class="stat-lbl">${esc(t("statTotal"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(stats.pending)}</div><div class="stat-lbl">${esc(t("statWaiting"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(stats.approved)}</div><div class="stat-lbl">${esc(t("statLive"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(stats.sold)}</div><div class="stat-lbl">${esc(t("statSold"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(stats.reported)}</div><div class="stat-lbl">${esc(t("statReported"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(Number(stats.income || 0).toLocaleString("en-US"))}</div><div class="stat-lbl">${esc(t("statIncome"))}</div></div>
+          </div>
+          <div class="chips-wrap" style="padding:4px 0 12px;">
+            <button type="button" class="chip${state.adminTab === "pending" ? " active" : ""}" data-admin-tab="pending">${esc(t("tabPending"))}</button>
+            <button type="button" class="chip${state.adminTab === "reported" ? " active" : ""}" data-admin-tab="reported">${esc(t("tabReported"))}</button>
+            <button type="button" class="chip${state.adminTab === "all" ? " active" : ""}" data-admin-tab="all">${esc(t("tabAll"))}</button>
+          </div>
+          ${
+            state.adminLoading
+              ? `<div class="state-box"><span class="emoji">⏳</span>${esc(t("loading"))}</div>`
+              : state.adminItems.length === 0
+              ? `<div class="state-box"><span class="emoji">✅</span>${esc(t("emptyAdmin"))}</div>`
+              : `<div class="list-stack">
+                  ${state.adminItems
+                    .map((it) => {
+                      const cover = getCoverImage(it.media);
+                      const cat = cats[it.cat];
+                      const pay = it.pay || {};
+                      const loc = formatItemLocation(it);
+                      const stClass =
+                        it.status === "approved"
+                          ? "st-approved"
+                          : it.status === "rejected"
+                          ? "st-rejected"
+                          : it.status === "sold"
+                          ? "st-sold"
+                          : "st-pending";
+                      return `
+                        <div class="row-card">
+                          <div class="row-main">
+                            <div class="row-thumb">
+                              ${
+                                cover
+                                  ? `<img src="${esc(cloudThumbUrl(cover.id))}" alt="" loading="lazy" />`
+                                  : esc(cat ? cat.emoji : "📦")
+                              }
+                            </div>
+                            <div class="row-info">
+                              <div class="row-title">${esc(it.title)}</div>
+                              <div class="row-sub">
+                                ${esc(cat ? lval(cat.label) : it.cat)} · ${esc(formatPrice(it.price))}
+                              </div>
+                              ${loc ? `<div class="row-sub">📍 ${esc(loc)}</div>` : ""}
+                              <div class="row-sub">
+                                @${esc(it.tg || "-")} · ${esc(pay.plan || "free")} (${esc(pay.fee || 0)} ${esc(t("birr"))})
+                                ${pay.method ? ` · ${esc(pay.method)}: ${esc(pay.ref || "-")}` : ""}
+                              </div>
+                              <div class="row-sub">
+                                Reports: ${esc(it.reports || 0)} · <span class="status-badge ${stClass}">${esc(it.status)}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row-actions">
+                            <button type="button" class="btn btn-sm" data-admin-view="${esc(it.id)}">${esc(t("btnView"))}</button>
+                            ${
+                              pay.hasReceipt
+                                ? `<button type="button" class="btn btn-sm" data-admin-receipt="${esc(it.id)}">${esc(t("btnReceipt"))}</button>`
+                                : ""
+                            }
+                            <button type="button" class="btn btn-sm btn-primary" data-admin-approve="${esc(it.id)}">${esc(t("btnApprove"))}</button>
+                            <button type="button" class="btn btn-sm btn-warn" data-admin-reject="${esc(it.id)}">${esc(t("btnReject"))}</button>
+                            <button type="button" class="btn btn-sm btn-danger" data-admin-ban="${esc(it.id)}">${esc(t("btnBan"))}</button>
+                            <button type="button" class="btn btn-sm btn-danger" data-admin-delete="${esc(it.id)}">${esc(t("deleteBtn"))}</button>
+                          </div>
+                        </div>
+                      `;
+                    })
+                    .join("")}
+                </div>`
+          }
+        `;
+      }
+
+      function renderAdminUsersSection() {
+        const filters = [
+          { id: "all", label: t("usersFilterAll") },
+          { id: "sellers", label: t("usersFilterSellers") },
+          { id: "banned", label: t("usersFilterBanned") }
+        ];
+        return `
+          <div class="search-box" style="margin-bottom:8px;">
+            <input id="usersSearchInput" class="search-input" type="search" value="${esc(state.usersQuery)}" placeholder="${esc(t("usersSearchPlaceholder"))}" />
+            ${state.usersQuery ? `<button type="button" id="clearUsersSearchBtn" class="clear-search" aria-label="Clear">✕</button>` : ""}
+          </div>
+          <div class="chips-wrap" style="padding:4px 0 12px;">
+            ${filters
+              .map(
+                (f) =>
+                  `<button type="button" class="chip${state.usersFilter === f.id ? " active" : ""}" data-users-filter="${esc(f.id)}">${esc(f.label)}</button>`
+              )
+              .join("")}
+          </div>
+          ${
+            state.usersLoading && state.users.length === 0
+              ? `<div class="state-box"><span class="emoji">⏳</span>${esc(t("loading"))}</div>`
+              : state.users.length === 0
+              ? `<div class="state-box"><span class="emoji">👤</span>${esc(t("usersEmpty"))}</div>`
+              : `<div class="list-stack">
+                  ${state.users
+                    .map((u) => {
+                      const handle = u.username ? "@" + u.username : u.first_name || "#" + u.user_id;
+                      return `
+                        <div class="row-card">
+                          <div class="row-main">
+                            <div class="row-info">
+                              <div class="row-title">
+                                ${esc(handle)}
+                                ${u.isStaff ? `<span class="neg-badge" style="margin-left:6px;">${esc(t("staffBadge"))}</span>` : ""}
+                                ${u.banned ? `<span class="user-badge-banned" style="margin-left:6px;">${esc(t("bannedBadge"))}</span>` : ""}
+                              </div>
+                              <div class="row-sub">
+                                ID: ${esc(u.user_id)}${u.first_name && u.username ? " · " + esc(u.first_name) : ""}
+                              </div>
+                              <div class="row-sub">
+                                ${esc(t("usersItemsCount"))}: ${esc(u.itemCount)} (${esc(t("usersApprovedCount"))}: ${esc(u.approvedCount)}) · ${esc(t("usersLastSeen"))}: ${esc(formatDateTime(u.last_seen))}
+                              </div>
+                              ${
+                                u.banned && u.banReason
+                                  ? `<div class="field-error">${esc(t("reasonPrefix") + u.banReason)}</div>`
+                                  : ""
+                              }
+                            </div>
+                          </div>
+                          <div class="row-actions">
+                            ${
+                              u.banned
+                                ? `<button type="button" class="btn btn-sm btn-primary" data-user-unban="${esc(u.user_id)}">${esc(t("btnUnban"))}</button>`
+                                : !u.isStaff
+                                ? `<button type="button" class="btn btn-sm btn-danger" data-user-ban="${esc(u.user_id)}">${esc(t("btnBan"))}</button>`
+                                : ""
+                            }
+                          </div>
+                        </div>
+                      `;
+                    })
+                    .join("")}
+                </div>`
+          }
+          ${
+            state.users.length < state.usersTotal
+              ? `<div style="margin-top:12px;">
+                   <button type="button" id="usersLoadMoreBtn" class="btn" style="width:100%;" ${state.usersLoading ? "disabled" : ""}>${esc(t("loadMore"))}</button>
+                 </div>`
+              : ""
+          }
+        `;
+      }
+
+      function renderAdminAnalyticsSection() {
+        const d = state.analytics;
+        const cats = state.config ? state.config.categories : {};
+        const dayOpts = [
+          { d: 7, lbl: t("days7") },
+          { d: 30, lbl: t("days30") },
+          { d: 90, lbl: t("days90") }
+        ];
+        const selector = `
+          <div class="chips-wrap" style="padding:2px 0 12px;">
+            ${dayOpts
+              .map(
+                (o) =>
+                  `<button type="button" class="chip${state.analyticsDays === o.d ? " active" : ""}" data-analytics-days="${o.d}">${esc(o.lbl)}</button>`
+              )
+              .join("")}
+          </div>
+        `;
+        if (state.analyticsLoading || !d) {
+          return `${selector}<div class="state-box"><span class="emoji">⏳</span>${esc(t("loading"))}</div>`;
+        }
+        const tot = d.totals || {};
+        const sumNewItems = (d.daily || []).reduce((acc, r) => acc + Number(r.newItems || 0), 0);
+        const sumPeriodIncome = (d.daily || []).reduce((acc, r) => acc + Number(r.income || 0), 0);
+        const ratePct = Math.round(Number(d.approvalRate || 0) * 100);
+
+        return `
+          ${selector}
+          <div class="stats-grid">
+            <div class="stat-box"><div class="stat-val">${esc(tot.users || 0)}</div><div class="stat-lbl">${esc(t("statUsers"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(tot.newUsers || 0)}</div><div class="stat-lbl">${esc(t("statNewUsers"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(tot.activeUsers || 0)}</div><div class="stat-lbl">${esc(t("statActiveUsers"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(tot.items || 0)}</div><div class="stat-lbl">${esc(t("statTotal"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(tot.approved || 0)}</div><div class="stat-lbl">${esc(t("statLive"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(tot.pending || 0)}</div><div class="stat-lbl">${esc(t("statWaiting"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(tot.sold || 0)}</div><div class="stat-lbl">${esc(t("statSold"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(Number(tot.income || 0).toLocaleString("en-US"))}</div><div class="stat-lbl">${esc(t("statIncome"))}</div></div>
+            <div class="stat-box"><div class="stat-val">${esc(ratePct)}%</div><div class="stat-lbl">${esc(t("statApprovalRate"))}</div></div>
+          </div>
+          ${renderBarChartSvg(
+            d.daily || [],
+            "newItems",
+            t("chartNewItemsPerDay"),
+            `${t("statTotal")}: ${sumNewItems.toLocaleString("en-US")}`
+          )}
+          ${renderBarChartSvg(
+            d.daily || [],
+            "income",
+            t("chartIncomePerDay"),
+            `${t("statTotal")}: ${sumPeriodIncome.toLocaleString("en-US")} ${t("birr")}`
+          )}
+          ${renderHorizontalBars(
+            t("chartByCategory"),
+            d.byCategory || [],
+            (r) => (cats[r.cat] ? `${cats[r.cat].emoji} ${lval(cats[r.cat].label)}` : r.cat),
+            (r) => `${r.count} (${t("statLive")}: ${r.approved})`,
+            (r) => r.count
+          )}
+          ${renderHorizontalBars(
+            t("chartByRegion"),
+            d.byRegion || [],
+            (r) => getRegionLabel(r.region) || r.region,
+            (r) => String(r.count),
+            (r) => r.count
+          )}
+          ${renderHorizontalBars(
+            t("chartTopCities"),
+            d.topCities || [],
+            (r) => r.city,
+            (r) => String(r.count),
+            (r) => r.count
+          )}
+          ${renderHorizontalBars(
+            t("chartByPlan"),
+            d.plans || [],
+            (r) => r.plan,
+            (r) => `${r.count} · ${Number(r.income || 0).toLocaleString("en-US")} ${t("birr")}`,
+            (r) => r.count
+          )}
+        `;
+      }
+
+      function auditActionLabel(action) {
+        const map = {
+          item_approve: t("actItemApprove"),
+          item_reject: t("actItemReject"),
+          item_delete: t("actItemDelete"),
+          user_ban: t("actUserBan"),
+          user_unban: t("actUserUnban"),
+          settings_update: t("actSettingsUpdate"),
+          receipt_view: t("actReceiptView")
+        };
+        return map[action] || action;
+      }
+
+      function renderAdminAuditSection() {
+        if (state.auditLoading && state.auditRows.length === 0) {
+          return `<div class="state-box"><span class="emoji">⏳</span>${esc(t("loading"))}</div>`;
+        }
+        if (state.auditRows.length === 0) {
+          return `<div class="state-box"><span class="emoji">📜</span>${esc(t("auditEmpty"))}</div>`;
+        }
+        return `
+          <div class="list-stack">
+            ${state.auditRows
+              .map((r) => {
+                const adminName = r.admin_username ? "@" + r.admin_username : "#" + r.admin_id;
+                let targetText = "";
+                if (r.target_type === "user") {
+                  targetText = r.target_label
+                    ? (r.target_label.startsWith("@") ? r.target_label : "@" + r.target_label) + ` (#${r.target_id})`
+                    : `#${r.target_id || ""}`;
+                } else if (r.target_type === "item") {
+                  targetText = r.target_label
+                    ? `${r.target_label} (#${r.target_id})`
+                    : `#${r.target_id || ""}`;
+                } else if (r.target_id) {
+                  targetText = r.target_id;
+                }
+                return `
+                  <div class="row-card">
+                    <div class="row-title">${esc(auditActionLabel(r.action))}</div>
+                    <div class="row-sub">
+                      ${esc(formatDateTime(r.created_at))} · ${esc(adminName)}
+                    </div>
+                    ${targetText ? `<div class="row-sub">${esc(targetText)}</div>` : ""}
+                    ${r.details ? `<div class="detail-desc" style="margin:6px 0 0;padding:8px 10px;font-size:12px;">${esc(r.details)}</div>` : ""}
+                  </div>
+                `;
+              })
+              .join("")}
+          </div>
+          ${
+            state.auditNext !== null
+              ? `<div style="margin-top:12px;">
+                   <button type="button" id="auditLoadMoreBtn" class="btn" style="width:100%;" ${state.auditLoading ? "disabled" : ""}>${esc(t("loadMore"))}</button>
+                 </div>`
+              : ""
+          }
+        `;
+      }
+
+      function renderAdminSettingsSection() {
+        if (state.settingsLoading || !state.settingsDraft) {
+          return `<div class="state-box"><span class="emoji">⏳</span>${esc(t("loading"))}</div>`;
+        }
+        const isOwner = Boolean(state.me && state.me.isOwner);
+        const dis = isOwner ? "" : "disabled";
+        const s = state.settingsDraft;
+        const cbe = s.payment.CBE;
+        const tb = s.payment.Telebirr;
+        return `
+          ${!isOwner ? `<div class="info-box">${esc(t("settingsOwnerOnlyNote"))}</div>` : ""}
+          <div class="section-card">
+            <h3 class="section-title">${esc(t("settingsPlansTitle"))}</h3>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("settingsFreeNote"))}</span></label>
+              <input class="input" type="number" value="0" disabled style="background:var(--surface-2);color:var(--text-muted);" />
+            </div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("settingsStandardFee"))}</span></label>
+              <input id="setPlanStandard" class="input" type="number" min="0" max="100000" step="1" value="${esc(s.plans.standard)}" ${dis} />
+            </div>
+            <div class="field-group" style="margin-bottom:0;">
+              <label class="field-label"><span>${esc(t("settingsFeaturedFee"))}</span></label>
+              <input id="setPlanFeatured" class="input" type="number" min="0" max="100000" step="1" value="${esc(s.plans.featured)}" ${dis} />
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h3 class="section-title">${esc(t("settingsPaymentTitle"))}</h3>
+            <div style="font-weight:700;font-size:13px;color:var(--primary);margin-bottom:6px;">CBE</div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("settingsMethodLabel"))}</span></label>
+              <input id="setCbeLabel" class="input" type="text" maxlength="60" value="${esc(cbe.label)}" ${dis} />
+            </div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("settingsAccountNumber"))}</span></label>
+              <input id="setCbeNumber" class="input" type="text" maxlength="40" value="${esc(cbe.number)}" ${dis} />
+            </div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("settingsHolderName"))}</span></label>
+              <input id="setCbeHolder" class="input" type="text" maxlength="60" value="${esc(cbe.holder)}" ${dis} />
+            </div>
+            <hr style="border:0;border-top:1px solid var(--border);margin:12px 0;" />
+            <div style="font-weight:700;font-size:13px;color:var(--primary);margin-bottom:6px;">Telebirr</div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("settingsMethodLabel"))}</span></label>
+              <input id="setTbLabel" class="input" type="text" maxlength="60" value="${esc(tb.label)}" ${dis} />
+            </div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("settingsAccountNumber"))}</span></label>
+              <input id="setTbNumber" class="input" type="text" maxlength="40" value="${esc(tb.number)}" ${dis} />
+            </div>
+            <div class="field-group" style="margin-bottom:0;">
+              <label class="field-label"><span>${esc(t("settingsHolderName"))}</span></label>
+              <input id="setTbHolder" class="input" type="text" maxlength="60" value="${esc(tb.holder)}" ${dis} />
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h3 class="section-title">${esc(t("settingsLimitsTitle"))}</h3>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("settingsMaxPending"))}</span></label>
+              <input id="setLimPending" class="input" type="number" min="1" max="1000" step="1" value="${esc(s.limits.max_pending)}" ${dis} />
+            </div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("settingsAiDaily"))}</span></label>
+              <input id="setLimAi" class="input" type="number" min="1" max="1000" step="1" value="${esc(s.limits.ai_daily)}" ${dis} />
+            </div>
+            <div class="field-group" style="margin-bottom:0;">
+              <label class="field-label"><span>${esc(t("settingsUploadDaily"))}</span></label>
+              <input id="setLimUpload" class="input" type="number" min="1" max="1000" step="1" value="${esc(s.limits.upload_daily)}" ${dis} />
+            </div>
+          </div>
+
+          ${state.settingsError ? `<div class="field-error" style="margin-bottom:10px;">${esc(state.settingsError)}</div>` : ""}
+          ${
+            isOwner
+              ? `<button type="button" id="saveSettingsBtn" class="btn btn-primary" style="width:100%;" ${state.settingsSaving ? "disabled" : ""}>${esc(state.settingsSaving ? t("settingsSaving") : t("settingsSaveBtn"))}</button>`
+              : ""
+          }
+        `;
+      }
+
+      function renderAdminView() {
+        const isOwner = Boolean(state.me && state.me.isOwner);
+        const sections = [
+          { id: "items", label: t("adminTabItems") },
+          { id: "users", label: t("adminTabUsers") },
+          { id: "analytics", label: t("adminTabAnalytics") }
+        ];
+        if (isOwner) {
+          sections.push({ id: "audit", label: t("adminTabAudit") });
+        }
+        sections.push({ id: "settings", label: t("adminTabSettings") });
+
+        const current = sections.some((s) => s.id === state.adminSection) ? state.adminSection : "items";
+        let body = "";
+        if (current === "items") body = renderAdminItemsSection();
+        else if (current === "users") body = renderAdminUsersSection();
+        else if (current === "analytics") body = renderAdminAnalyticsSection();
+        else if (current === "audit" && isOwner) body = renderAdminAuditSection();
+        else if (current === "settings") body = renderAdminSettingsSection();
+
+        return `
+          <main class="content">
+            <div class="chips-wrap" style="padding:4px 0 12px;">
+              ${sections
+                .map(
+                  (s) =>
+                    `<button type="button" class="chip${current === s.id ? " active" : ""}" data-admin-section="${esc(s.id)}">${esc(s.label)}</button>`
+                )
+                .join("")}
+            </div>
+            ${body}
+          </main>
+        `;
+      }
+
+      function renderAiView() {
+        const msgs = state.aiMessages.length
+          ? state.aiMessages
+          : [{ role: "assistant", content: t("aiWelcome") }];
+        return `
+          <main class="content">
+            <div class="chat-wrap">
+              <div id="chatLog" class="chat-log">
+                ${msgs
+                  .map(
+                    (m) => `
+                      <div class="bubble ${m.role === "user" ? "bubble-user" : "bubble-ai"}">${esc(m.content)}</div>
+                    `
+                  )
+                  .join("")}
+                ${state.aiBusy ? `<div class="bubble bubble-ai">...</div>` : ""}
+              </div>
+              <form id="aiForm" class="chat-form">
+                <input id="aiInput" class="input" type="text" maxlength="500" placeholder="${esc(t("aiPlaceholder"))}" ${state.aiBusy ? "disabled" : ""} />
+                <button type="submit" class="btn btn-primary" ${state.aiBusy ? "disabled" : ""}>${esc(t("send"))}</button>
+              </form>
+            </div>
+          </main>
+        `;
+      }
+
+      function renderPostView() {
+        const p = state.post;
+        const cats = state.config ? state.config.categories : {};
+        const cat = p.cat ? cats[p.cat] : null;
+        const plans = state.config ? state.config.plans : { free: 0, standard: 30, featured: 100 };
+        const regions = getRegions();
+
+        if (p.submitted) {
+          return `
+            <main class="content">
+              <div class="wizard-card" style="text-align:center;padding:28px 18px;">
+                <div style="font-size:44px;margin-bottom:8px;">✅</div>
+                <h2 style="margin:0 0 8px;">${esc(t("postedTitle"))}</h2>
+                <p style="color:var(--text-muted);margin:0 0 18px;">${esc(t("postedDesc"))}</p>
+                <button type="button" id="postDoneBtn" class="btn btn-primary" style="width:100%;">${esc(t("done"))}</button>
+              </div>
+            </main>
+          `;
+        }
+
+        let bodyHtml = "";
+        let nextDisabled = false;
+
+        if (p.step === 1) {
+          nextDisabled = !p.cat;
+          bodyHtml = `
+            <h3 style="margin:0 0 10px;">${esc(t("step1Title"))}</h3>
+            <div class="notice-box">⚠️ ${esc(t("step1Notice"))}</div>
+            <div class="cat-picker">
+              ${Object.keys(cats)
+                .map((key) => {
+                  const c = cats[key];
+                  return `
+                    <button type="button" class="cat-option${p.cat === key ? " selected" : ""}" data-pick-cat="${esc(key)}">
+                      <span class="cat-option-emoji">${esc(c.emoji)}</span>
+                      <div>
+                        <div class="cat-option-title">${esc(lval(c.label))}</div>
+                        <div class="cat-option-desc">${esc(lval(c.desc))}</div>
+                      </div>
+                    </button>
+                  `;
+                })
+                .join("")}
+            </div>
+          `;
+        } else if (p.step === 2) {
+          const photoItems = p.media.filter((m) => m.type === "image");
+          const videoItems = p.media.filter((m) => m.type === "video");
+          const hasBusy = p.media.some((m) => m.status === "queued" || m.status === "uploading");
+          const hasError = p.media.some((m) => m.status === "error");
+          const donePhotos = photoItems.filter((m) => m.status === "done").length;
+          nextDisabled = donePhotos < 1 || hasBusy || hasError;
+
+          bodyHtml = `
+            <h3 style="margin:0 0 8px;">${esc(t("step2Title"))}</h3>
+            <div class="info-box">${esc(t("step2Desc"))}</div>
+            <div class="media-counters">
+              <span class="media-counter">${esc(t("photosCount", { n: photoItems.length }))}</span>
+              <span class="media-counter">${esc(t("videoCount", { n: videoItems.length }))}</span>
+            </div>
+            <div class="action-row">
+              <label class="btn btn-primary" style="position:relative;overflow:hidden;">
+                📷 ${esc(t("addPhotos"))}
+                <input id="photoPicker" type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:none;" ${photoItems.length >= 6 ? "disabled" : ""} />
+              </label>
+              <label class="btn" style="position:relative;overflow:hidden;">
+                🎥 ${esc(t("addVideo"))}
+                <input id="videoPicker" type="file" accept="video/mp4,video/quicktime,video/webm" style="display:none;" ${videoItems.length >= 1 ? "disabled" : ""} />
+              </label>
+            </div>
+            <div class="media-grid">
+              ${p.media
+                .map((m, idx) => {
+                  const firstImgIdx = p.media.findIndex((x) => x.type === "image");
+                  const isCover = m.type === "image" && idx === firstImgIdx;
+                  return `
+                    <div class="media-tile${isCover ? " cover" : ""}" data-make-cover="${esc(m.uid)}">
+                      ${
+                        m.type === "image"
+                          ? `<img src="${esc(m.previewUrl)}" alt="" />`
+                          : `<video src="${esc(m.previewUrl)}" muted playsinline></video>`
+                      }
+                      <button type="button" class="media-remove" data-remove-media="${esc(m.uid)}" aria-label="Remove">✕</button>
+                      ${isCover ? `<span class="media-cover-tag">${esc(t("coverTag"))}</span>` : ""}
+                      ${
+                        m.status === "uploading" || m.status === "queued"
+                          ? `<div class="media-progress">${esc(t("uploading"))} ${esc(m.progress)}%</div>`
+                          : m.status === "error"
+                          ? `<div class="media-progress" style="background:rgba(198,40,40,0.9);cursor:pointer;" data-retry-media="${esc(m.uid)}">${esc(t("failedRetry"))}</div>`
+                          : ""
+                      }
+                    </div>
+                  `;
+                })
+                .join("")}
+            </div>
+            ${donePhotos < 1 ? `<div class="field-error" style="margin-top:10px;">${esc(t("errNeedPhoto"))}</div>` : ""}
+          `;
+        } else if (p.step === 3 && cat) {
+          const priceLbl = p.cat === "services" ? t("startingPrice") : t("priceLabel");
+          const username = state.me && state.me.username ? "@" + state.me.username : "";
+          const selectedRegionObj = getRegionObj(p.region);
+          const citySuggestions = selectedRegionObj && Array.isArray(selectedRegionObj.cities)
+            ? selectedRegionObj.cities
+            : [];
+
+          const catFieldsHtml = cat.fields
+            .map((f) => {
+              const val = p.attrs[f.key];
+              const errMsg = p.errors["attr_" + f.key];
+              const reqMark = f.required ? `<span class="req">*</span>` : "";
+              let inputHtml = "";
+
+              if (f.type === "select") {
+                inputHtml = `
+                  <select class="select" data-attr-input="${esc(f.key)}">
+                    <option value="">--</option>
+                    ${f.options
+                      .map(
+                        (o) =>
+                          `<option value="${esc(o.v)}"${val === o.v ? " selected" : ""}>${esc(lval(o))}</option>`
+                      )
+                      .join("")}
+                  </select>
+                `;
+              } else if (f.type === "multiselect") {
+                const arr = Array.isArray(val) ? val : [];
+                inputHtml = `
+                  <div class="multi-checks">
+                    ${f.options
+                      .map((o) => {
+                        const checked = arr.includes(o.v);
+                        return `
+                          <label class="check-pill">
+                            <input type="checkbox" data-attr-multi="${esc(f.key)}" value="${esc(o.v)}"${checked ? " checked" : ""} />
+                            <span>${esc(lval(o))}</span>
+                          </label>
+                        `;
+                      })
+                      .join("")}
+                  </div>
+                `;
+              } else if (f.type === "number") {
+                inputHtml = `
+                  <input class="input" type="number" data-attr-input="${esc(f.key)}"
+                    value="${esc(val !== undefined && val !== null ? val : "")}"
+                    ${f.min !== undefined ? `min="${esc(f.min)}"` : ""}
+                    ${f.max !== undefined ? `max="${esc(f.max)}"` : ""}
+                    placeholder="${esc(lval(f.placeholder))}" />
+                `;
+              } else if (f.type === "date") {
+                inputHtml = `
+                  <input class="input" type="date" data-attr-input="${esc(f.key)}"
+                    value="${esc(val || "")}" />
+                `;
+              } else {
+                const maxLen = f.maxLength || 60;
+                const curLen = typeof val === "string" ? val.length : 0;
+                inputHtml = `
+                  <input class="input" type="text" data-attr-input="${esc(f.key)}"
+                    value="${esc(val || "")}"
+                    maxlength="${esc(maxLen)}"
+                    placeholder="${esc(lval(f.placeholder))}" />
+                `;
+                return `
+                  <div class="field-group">
+                    <label class="field-label">
+                      <span>${esc(lval(f.label))}${reqMark}</span>
+                      <span class="char-count">${curLen}/${maxLen}</span>
+                    </label>
+                    ${inputHtml}
+                    ${errMsg ? `<div class="field-error">${esc(errMsg)}</div>` : ""}
+                  </div>
+                `;
+              }
+
+              return `
+                <div class="field-group">
+                  <label class="field-label"><span>${esc(lval(f.label))}${reqMark}</span></label>
+                  ${inputHtml}
+                  ${errMsg ? `<div class="field-error">${esc(errMsg)}</div>` : ""}
+                </div>
+              `;
+            })
+            .join("");
+
+          bodyHtml = `
+            <h3 style="margin:0 0 12px;">${esc(t("step3Title"))}</h3>
+            ${!username ? `<div class="notice-box">${esc(t("noTgUsername"))}</div>` : ""}
+            ${catFieldsHtml}
+            <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;" />
+            <div class="field-group">
+              <label class="field-label">
+                <span>${esc(t("regionLabel"))}<span class="req">*</span></span>
+              </label>
+              <select id="fRegion" class="select">
+                <option value="">${esc(t("selectRegionOption"))}</option>
+                ${regions
+                  .map(
+                    (r) =>
+                      `<option value="${esc(r.v)}"${p.region === r.v ? " selected" : ""}>${esc(lval(r))}</option>`
+                  )
+                  .join("")}
+              </select>
+              ${p.errors.region ? `<div class="field-error">${esc(p.errors.region)}</div>` : ""}
+            </div>
+            <div class="field-group">
+              <label class="field-label">
+                <span>${esc(t("cityLabel"))}<span class="req">*</span></span>
+                <span class="char-count" id="cityCount">${p.city.length}/40</span>
+              </label>
+              <input id="fCity" class="input" type="text" maxlength="40" value="${esc(p.city)}" placeholder="${esc(t("cityPlaceholder"))}" />
+              ${
+                citySuggestions.length
+                  ? `<div class="quick-places">
+                      ${citySuggestions
+                        .map(
+                          (c) => `<button type="button" class="quick-place-btn" data-pick-city="${esc(c)}">${esc(c)}</button>`
+                        )
+                        .join("")}
+                    </div>`
+                  : ""
+              }
+              ${p.errors.city ? `<div class="field-error">${esc(p.errors.city)}</div>` : ""}
+            </div>
+            <div class="field-group">
+              <label class="field-label">
+                <span>${esc(t("placeLabel"))}</span>
+                <span class="char-count" id="placeCount">${p.place.length}/40</span>
+              </label>
+              <input id="fPlace" class="input" type="text" maxlength="40" value="${esc(p.place)}" placeholder="${esc(t("placePlaceholder"))}" />
+              ${p.errors.place ? `<div class="field-error">${esc(p.errors.place)}</div>` : ""}
+            </div>
+            <div class="field-group">
+              <label class="field-label">
+                <span>${esc(t("titleLabel"))}<span class="req">*</span></span>
+                <span class="char-count" id="titleCount">${p.title.length}/60</span>
+              </label>
+              <input id="fTitle" class="input" type="text" maxlength="60" value="${esc(p.title)}" placeholder="${esc(lval(cat.titlePlaceholder))}" />
+              ${p.errors.title ? `<div class="field-error">${esc(p.errors.title)}</div>` : ""}
+            </div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(priceLbl)}<span class="req">*</span></span></label>
+              <input id="fPrice" class="input" type="number" min="0" max="100000000" step="1" value="${esc(p.price)}" placeholder="0" />
+              ${p.errors.price ? `<div class="field-error">${esc(p.errors.price)}</div>` : ""}
+            </div>
+            <div class="field-group">
+              <label class="check-pill">
+                <input id="fNegotiable" type="checkbox"${p.negotiable ? " checked" : ""} />
+                <span>${esc(t("negotiableLabel"))}</span>
+              </label>
+            </div>
+            <div class="field-group">
+              <label class="field-label">
+                <span>${esc(t("descLabel"))}<span class="req">*</span></span>
+                <span class="char-count" id="descCount">${p.desc.length}/300</span>
+              </label>
+              <textarea id="fDesc" class="textarea" maxlength="300">${esc(p.desc)}</textarea>
+              ${p.errors.desc ? `<div class="field-error">${esc(p.errors.desc)}</div>` : ""}
+            </div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("sellerTgLabel"))}</span></label>
+              <input class="input" type="text" value="${esc(username || "-")}" readonly style="background:var(--surface-2);color:var(--text-muted);" />
+            </div>
+          `;
+        } else if (p.step === 4) {
+          const planRows = [
+            { id: "free", title: t("planFree"), desc: t("planFreeDesc"), fee: Number(plans.free || 0) },
+            { id: "standard", title: t("planStandard"), desc: t("planStandardDesc"), fee: Number(plans.standard || 0) },
+            { id: "featured", title: t("planFeatured"), desc: t("planFeaturedDesc"), fee: Number(plans.featured || 0) }
+          ];
+          bodyHtml = `
+            <h3 style="margin:0 0 12px;">${esc(t("step4Title"))}</h3>
+            ${planRows
+              .map(
+                (pl) => `
+                  <div class="plan-card${p.plan === pl.id ? " selected" : ""}" data-pick-plan="${esc(pl.id)}">
+                    <div>
+                      <div style="font-weight:800;font-size:15px;">${esc(pl.title)}</div>
+                      <div style="font-size:13px;color:var(--text-muted);">${esc(pl.desc)}</div>
+                    </div>
+                    <div class="plan-price">${esc(pl.fee)} ${esc(t("birr"))}</div>
+                  </div>
+                `
+              )
+              .join("")}
+          `;
+        } else if (p.step === 5) {
+          const fee = Number(plans[p.plan] || 0);
+          const payCfg = (state.config && state.config.payment) || {};
+          const pm = payCfg[p.payMethod] || payCfg.CBE || { label: p.payMethod, number: "-", holder: "-" };
+          bodyHtml = `
+            <h3 style="margin:0 0 12px;">${esc(t("step5Title"))}</h3>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("chooseMethod"))}<span class="req">*</span></span></label>
+              <div class="action-row">
+                <button type="button" class="btn${p.payMethod === "CBE" ? " btn-primary" : ""}" data-pay-method="CBE">CBE</button>
+                <button type="button" class="btn${p.payMethod === "Telebirr" ? " btn-primary" : ""}" data-pay-method="Telebirr">Telebirr</button>
+              </div>
+              ${p.errors.payMethod ? `<div class="field-error">${esc(p.errors.payMethod)}</div>` : ""}
+            </div>
+            <div class="pay-box">
+              <div style="font-weight:800;margin-bottom:6px;">${esc(t("payToAccount", { amount: fee }))}</div>
+              <div style="font-size:13px;color:var(--text-muted);">${esc(pm.label)}</div>
+              <div class="pay-account-row">
+                <div>
+                  <div style="font-size:12px;color:var(--text-muted);">${esc(t("accountNumber"))}</div>
+                  <div style="font-size:17px;font-weight:800;">${esc(pm.number)}</div>
+                </div>
+                <button type="button" id="copyPayBtn" class="btn btn-sm">${esc(t("copyNumber"))}</button>
+              </div>
+              <div style="font-size:13px;">
+                <span style="color:var(--text-muted);">${esc(t("accountHolder"))}:</span>
+                <strong>${esc(pm.holder)}</strong>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("payRefLabel"))}<span class="req">*</span></span></label>
+              <input id="fPayRef" class="input" type="text" maxlength="60" value="${esc(p.payRef)}" placeholder="${esc(t("payRefPlaceholder"))}" />
+              ${p.errors.payRef ? `<div class="field-error">${esc(p.errors.payRef)}</div>` : ""}
+            </div>
+            <div class="field-group">
+              <label class="field-label"><span>${esc(t("receiptLabel"))}<span class="req">*</span></span></label>
+              <label class="btn" style="width:100%;">
+                🧾 ${esc(t("chooseReceipt"))}
+                <input id="receiptPicker" type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" />
+              </label>
+              ${
+                p.receiptDataUrl
+                  ? `<div style="margin-top:8px;">
+                       <span class="neg-badge">${esc(t("receiptReady"))}</span>
+                       <img src="${esc(p.receiptDataUrl)}" class="receipt-preview" alt="" />
+                     </div>`
+                  : ""
+              }
+              ${p.errors.receipt ? `<div class="field-error">${esc(p.errors.receipt)}</div>` : ""}
+            </div>
+          `;
+        } else if (p.step === 6 && cat) {
+          const fee = plans[p.plan] ?? 0;
+          const cover = p.media.find((m) => m.type === "image");
+          const attrRows = cat.fields
+            .map((f) => {
+              const v = formatFieldValue(p.cat, f, p.attrs[f.key]);
+              if (!v) return "";
+              return `<tr><th>${esc(lval(f.label))}</th><td>${esc(v)}</td></tr>`;
+            })
+            .join("");
+
+          bodyHtml = `
+            <h3 style="margin:0 0 12px;">${esc(t("step6Title"))}</h3>
+            <div class="row-card" style="margin-bottom:12px;">
+              <div class="row-main">
+                <div class="row-thumb">
+                  ${cover ? `<img src="${esc(cover.previewUrl)}" alt="" />` : esc(cat.emoji)}
+                </div>
+                <div class="row-info">
+                  <span class="price-tag">${esc(formatPrice(Number(p.price || 0)))}</span>
+                  ${p.negotiable ? `<span class="neg-badge" style="margin-left:6px;">${esc(t("negotiable"))}</span>` : ""}
+                  <div class="row-title" style="margin-top:4px;">${esc(p.title)}</div>
+                  <div class="row-sub">📍 ${esc(formatItemLocation({ region: p.region, city: p.city, place: p.place }))} · ${esc(lval(cat.label))}</div>
+                </div>
+              </div>
+              <div class="detail-desc" style="margin-top:10px;margin-bottom:10px;">${esc(p.desc)}</div>
+              <table class="details-table" style="margin-bottom:6px;">
+                <tr><th>${esc(t("regionLabel"))}</th><td>${esc(getRegionLabel(p.region))}</td></tr>
+                <tr><th>${esc(t("cityLabel"))}</th><td>${esc(p.city)}</td></tr>
+                ${p.place.trim() ? `<tr><th>${esc(t("placeLabel"))}</th><td>${esc(p.place.trim())}</td></tr>` : ""}
+                ${attrRows}
+                <tr><th>Plan</th><td>${esc(p.plan)} (${esc(fee)} ${esc(t("birr"))})</td></tr>
+                ${fee > 0 ? `<tr><th>Payment</th><td>${esc(p.payMethod)} · ${esc(p.payRef)}</td></tr>` : ""}
+              </table>
+            </div>
+            <label class="check-pill" style="width:100%;margin-bottom:10px;">
+              <input id="fConfirmLegal" type="checkbox"${p.confirmLegal ? " checked" : ""} />
+              <span>${esc(t("confirmLegal"))}</span>
+            </label>
+            ${p.errors.confirmLegal ? `<div class="field-error">${esc(p.errors.confirmLegal)}</div>` : ""}
+            ${p.errors.submit ? `<div class="field-error">${esc(p.errors.submit)}</div>` : ""}
+          `;
+        }
+
+        const pct = Math.round((p.step / 6) * 100);
+        return `
+          <main class="content">
+            <div class="wizard-card">
+              <div class="wizard-top">
+                <button type="button" id="postBackBtn" class="btn btn-sm">← ${esc(t("back"))}</button>
+                <span class="step-label">${esc(t("stepOf", { step: p.step }))}</span>
+              </div>
+              <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+              ${bodyHtml}
+              <div class="action-row" style="margin-top:16px;">
+                ${
+                  p.step < 6
+                    ? `<button type="button" id="postNextBtn" class="btn btn-primary" style="width:100%;" ${nextDisabled ? "disabled" : ""}>${esc(t("next"))} →</button>`
+                    : `<button type="button" id="postSubmitBtn" class="btn btn-primary" style="width:100%;" ${p.submitting ? "disabled" : ""}>${esc(p.submitting ? t("submitting") : t("submit"))}</button>`
+                }
+              </div>
+            </div>
+          </main>
+        `;
+      }
+
+      function renderApp() {
+        const root = document.getElementById("root");
+        let mainHtml = "";
+        if (state.view === "browse") mainHtml = renderBrowseView();
+        else if (state.view === "saved") mainHtml = renderSavedView();
+        else if (state.view === "mine") mainHtml = renderMineView();
+        else if (state.view === "admin") mainHtml = renderAdminView();
+        else if (state.view === "ai") mainHtml = renderAiView();
+        else if (state.view === "post") mainHtml = renderPostView();
+
+        root.innerHTML = `<div class="app-shell">${renderHeader()}${mainHtml}</div>`;
+        bindEvents();
+
+        if (state.view === "ai") {
+          const log = document.getElementById("chatLog");
+          if (log) log.scrollTop = log.scrollHeight;
+        }
+      }
+
+      function openItemSheet(item, isAdminPreview = false) {
+        const backdrop = document.getElementById("sheetBackdrop");
+        const sheet = document.getElementById("sheetContent");
+        const cats = state.config ? state.config.categories : {};
+        const cat = cats[item.cat];
+        const media = Array.isArray(item.media) ? item.media : [];
+        const saved = isSaved(item.id);
+
+        const slidesHtml = media.length
+          ? media
+              .map((m) => {
+                if (m.type === "video") {
+                  return `
+                    <div class="gallery-slide">
+                      <video controls playsinline muted preload="none" poster="${esc(cloudVideoPosterUrl(m.id))}">
+                        <source src="${esc(cloudVideoUrl(m.id))}" type="video/mp4" />
+                      </video>
+                    </div>
+                  `;
+                }
+                return `
+                  <div class="gallery-slide">
+                    <img src="${esc(cloudFullUrl(m.id))}" alt="${esc(item.title)}" loading="lazy" />
+                  </div>
+                `;
+              })
+              .join("")
+          : `<div class="gallery-slide"><span style="font-size:64px;">${esc(cat ? cat.emoji : "📦")}</span></div>`;
+
+        const attrs = item.attrs || {};
+        const attrRows = cat
+          ? cat.fields
+              .map((f) => {
+                const v = formatFieldValue(item.cat, f, attrs[f.key]);
+                if (!v) return "";
+                return `<tr><th>${esc(lval(f.label))}</th><td>${esc(v)}</td></tr>`;
+              })
+              .join("")
+          : "";
+
+        const locationRows = `
+          ${item.region ? `<tr><th>${esc(t("regionLabel"))}</th><td>${esc(getRegionLabel(item.region))}</td></tr>` : ""}
+          ${item.city ? `<tr><th>${esc(t("cityLabel"))}</th><td>${esc(item.city)}</td></tr>` : ""}
+          ${item.place ? `<tr><th>${esc(t("placeLabel"))}</th><td>${esc(item.place)}</td></tr>` : ""}
+        `;
+
+        const cleanTg = String(item.tg || "").replace(/[^a-zA-Z0-9_]/g, "");
+        const locSummary = formatItemLocation(item);
+
+        sheet.innerHTML = `
+          <div class="sheet-handle"></div>
+          <div class="sheet-header">
+            <span style="font-weight:700;font-size:13px;color:var(--text-muted);">
+              ${esc(cat ? cat.emoji + " " + lval(cat.label) : item.cat)}
+            </span>
+            <button type="button" id="sheetCloseBtn" class="btn btn-sm">${esc(t("close"))}</button>
+          </div>
+          <div class="gallery-wrap">
+            <div id="galleryTrack" class="gallery-track">${slidesHtml}</div>
+            ${media.length > 1 ? `<div id="galleryCounter" class="gallery-count">1 / ${media.length}</div>` : ""}
+          </div>
+          <div class="detail-price-row">
+            <span class="detail-price">${esc(formatPrice(item.price))}</span>
+            ${item.negotiable ? `<span class="neg-badge">${esc(t("negotiable"))}</span>` : ""}
+          </div>
+          <h2 class="detail-title">${esc(item.title)}</h2>
+          <div class="detail-place">📍 ${esc(locSummary || "-")}${cleanTg ? ` · @${esc(cleanTg)}` : ""}</div>
+          <div class="detail-desc">${esc(item.desc)}</div>
+          ${
+            locationRows || attrRows
+              ? `<h4 style="margin:0 0 6px;">${esc(t("detailsHeading"))}</h4>
+                 <table class="details-table">${locationRows}${attrRows}</table>`
+              : ""
+          }
+          <div class="translate-box">
+            <div style="font-weight:700;font-size:13px;">🌐 ${esc(t("translateHeading"))}</div>
+            <div class="translate-btns">
+              <button type="button" class="btn btn-sm" data-tr-lang="en">English</button>
+              <button type="button" class="btn btn-sm" data-tr-lang="om">Afaan Oromoo</button>
+              <button type="button" class="btn btn-sm" data-tr-lang="am">አማርኛ</button>
+            </div>
+            <div id="translateOut" class="translate-result" style="display:none;"></div>
+          </div>
+          <div class="action-stack">
+            ${
+              cleanTg
+                ? `<button type="button" id="msgSellerBtn" class="btn btn-primary" style="width:100%;">💬 ${esc(t("messageSeller"))} (@${esc(cleanTg)})</button>`
+                : ""
+            }
+            <div class="action-row">
+              ${
+                !isAdminPreview
+                  ? `<button type="button" id="sheetSaveBtn" class="btn">${esc(saved ? t("unsave") : t("save"))}</button>
+                     <button type="button" id="sheetReportBtn" class="btn btn-danger">${esc(t("report"))}</button>`
+                  : ""
+              }
+            </div>
+          </div>
+        `;
+
+        backdrop.classList.add("open");
+        backdrop.setAttribute("aria-hidden", "false");
+
+        const track = document.getElementById("galleryTrack");
+        const counter = document.getElementById("galleryCounter");
+        if (track && counter && media.length > 1) {
+          track.addEventListener("scroll", () => {
+            const w = track.clientWidth || 1;
+            const idx = Math.min(media.length, Math.max(1, Math.round(track.scrollLeft / w) + 1));
+            counter.textContent = `${idx} / ${media.length}`;
+          });
+        }
+
+        document.getElementById("sheetCloseBtn").addEventListener("click", closeSheet);
+
+        if (cleanTg) {
+          document.getElementById("msgSellerBtn").addEventListener("click", () => {
+            const url = `https://t.me/${encodeURIComponent(cleanTg)}`;
+            if (tg && tg.openTelegramLink) {
+              tg.openTelegramLink(url);
+            } else {
+              window.location.href = url;
+            }
+          });
+        }
+
+        const saveBtn = document.getElementById("sheetSaveBtn");
+        if (saveBtn) {
+          saveBtn.addEventListener("click", () => {
+            toggleSave(item);
+            saveBtn.textContent = isSaved(item.id) ? t("unsave") : t("save");
+            renderApp();
+          });
+        }
+
+        const reportBtn = document.getElementById("sheetReportBtn");
+        if (reportBtn) {
+          reportBtn.addEventListener("click", async () => {
+            reportBtn.disabled = true;
+            try {
+              await api(`/api/items/${item.id}/report`, { method: "POST" });
+              showToast(t("reportedOk"));
+            } catch (e) {
+              showToast(e.message);
+            } finally {
+              reportBtn.disabled = false;
+            }
+          });
+        }
+
+        sheet.querySelectorAll("[data-tr-lang]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const to = btn.getAttribute("data-tr-lang");
+            const out = document.getElementById("translateOut");
+            out.style.display = "block";
+            out.textContent = t("translating");
+            try {
+              const sourceText = `${item.title}\n\n${item.desc}`;
+              const res = await api("/api/ai", {
+                method: "POST",
+                body: JSON.stringify({ task: "translate", text: sourceText, to })
+              });
+              out.textContent = res.text;
+            } catch (e) {
+              out.textContent = e.message;
+            }
+          });
+        });
+      }
+
+      function closeSheet() {
+        const backdrop = document.getElementById("sheetBackdrop");
+        const sheet = document.getElementById("sheetContent");
+        backdrop.classList.remove("open");
+        backdrop.setAttribute("aria-hidden", "true");
+        sheet.innerHTML = "";
+      }
+
+      function openConfirmDialog(message, onConfirm) {
+        const bd = document.getElementById("dialogBackdrop");
+        const dc = document.getElementById("dialogContent");
+        dc.innerHTML = `
+          <div style="font-weight:700;font-size:16px;margin-bottom:16px;">${esc(message)}</div>
+          <div class="action-row">
+            <button type="button" id="dlgCancel" class="btn">${esc(t("cancel"))}</button>
+            <button type="button" id="dlgConfirm" class="btn btn-danger">${esc(t("confirm"))}</button>
+          </div>
+        `;
+        bd.classList.add("open");
+        bd.setAttribute("aria-hidden", "false");
+        document.getElementById("dlgCancel").onclick = closeDialog;
+        document.getElementById("dlgConfirm").onclick = async () => {
+          closeDialog();
+          await onConfirm();
+        };
+      }
+
+      function openBanDialog(onBan) {
+        const bd = document.getElementById("dialogBackdrop");
+        const dc = document.getElementById("dialogContent");
+        dc.innerHTML = `
+          <h3 style="margin:0 0 10px;">${esc(t("banTitle"))}</h3>
+          <div class="field-group">
+            <label class="field-label"><span>${esc(t("banReasonLabel"))}</span></label>
+            <textarea id="banReasonInput" class="textarea" maxlength="200" placeholder="${esc(t("banReasonPlaceholder"))}"></textarea>
+          </div>
+          <div class="action-row">
+            <button type="button" id="dlgCancel" class="btn">${esc(t("cancel"))}</button>
+            <button type="button" id="dlgConfirm" class="btn btn-danger">${esc(t("btnBan"))}</button>
+          </div>
+        `;
+        bd.classList.add("open");
+        bd.setAttribute("aria-hidden", "false");
+        document.getElementById("dlgCancel").onclick = closeDialog;
+        document.getElementById("dlgConfirm").onclick = async () => {
+          const reason = document.getElementById("banReasonInput").value.trim();
+          closeDialog();
+          await onBan(reason);
+        };
+      }
+
+      function openPromptDialog(message, okLabel, onAccept) {
+        const bd = document.getElementById("dialogBackdrop");
+        const dc = document.getElementById("dialogContent");
+        dc.innerHTML = `
+          <div style="font-weight:700;font-size:16px;margin-bottom:16px;">${esc(message)}</div>
+          <div class="action-row">
+            <button type="button" id="dlgCancel" class="btn">${esc(t("cancel"))}</button>
+            <button type="button" id="dlgConfirm" class="btn btn-primary">${esc(okLabel)}</button>
+          </div>
+        `;
+        bd.classList.add("open");
+        bd.setAttribute("aria-hidden", "false");
+        document.getElementById("dlgCancel").onclick = closeDialog;
+        document.getElementById("dlgConfirm").onclick = async () => {
+          closeDialog();
+          await onAccept();
+        };
+      }
+
+      function openRejectDialog(onReject) {
+        const bd = document.getElementById("dialogBackdrop");
+        const dc = document.getElementById("dialogContent");
+        dc.innerHTML = `
+          <h3 style="margin:0 0 10px;">${esc(t("rejectTitle"))}</h3>
+          <div class="field-group">
+            <label class="field-label"><span>${esc(t("rejectReasonLabel"))}</span></label>
+            <textarea id="rejectReasonInput" class="textarea" maxlength="200" placeholder="${esc(t("rejectReasonPlaceholder"))}"></textarea>
+          </div>
+          <div class="action-row">
+            <button type="button" id="dlgCancel" class="btn">${esc(t("cancel"))}</button>
+            <button type="button" id="dlgConfirm" class="btn btn-warn">${esc(t("btnReject"))}</button>
+          </div>
+        `;
+        bd.classList.add("open");
+        bd.setAttribute("aria-hidden", "false");
+        document.getElementById("dlgCancel").onclick = closeDialog;
+        document.getElementById("dlgConfirm").onclick = async () => {
+          const reason = document.getElementById("rejectReasonInput").value.trim();
+          closeDialog();
+          await onReject(reason);
+        };
+      }
+
+      async function openReceiptDialog(itemId) {
+        const bd = document.getElementById("dialogBackdrop");
+        const dc = document.getElementById("dialogContent");
+        dc.innerHTML = `
+          <div class="sheet-header">
+            <h3 style="margin:0;">${esc(t("receiptTitle"))}</h3>
+            <button type="button" id="dlgClose" class="btn btn-sm">${esc(t("close"))}</button>
+          </div>
+          <div id="receiptBody" class="state-box">${esc(t("loading"))}</div>
+        `;
+        bd.classList.add("open");
+        bd.setAttribute("aria-hidden", "false");
+        let objUrl = "";
+        const closeAndRevoke = () => {
+          if (objUrl) URL.revokeObjectURL(objUrl);
+          closeDialog();
+        };
+        document.getElementById("dlgClose").onclick = closeAndRevoke;
+        try {
+          const res = await fetch(`/api/admin/receipt/${itemId}`, {
+            headers: { "X-Init-Data": initData }
+          });
+          if (!res.ok) throw new Error("Could not load receipt");
+          const blob = await res.blob();
+          objUrl = URL.createObjectURL(blob);
+          const body = document.getElementById("receiptBody");
+          if (body) {
+            body.className = "";
+            body.innerHTML = `<img src="${esc(objUrl)}" style="width:100%;max-height:70vh;object-fit:contain;border-radius:10px;" alt="Receipt" />`;
+          }
+        } catch (e) {
+          const body = document.getElementById("receiptBody");
+          if (body) body.textContent = e.message;
+        }
+      }
+
+      function closeDialog() {
+        const bd = document.getElementById("dialogBackdrop");
+        const dc = document.getElementById("dialogContent");
+        bd.classList.remove("open");
+        bd.setAttribute("aria-hidden", "true");
+        dc.innerHTML = "";
+      }
+
+      document.getElementById("sheetBackdrop").addEventListener("click", (e) => {
+        if (e.target.id === "sheetBackdrop") closeSheet();
+      });
+      document.getElementById("dialogBackdrop").addEventListener("click", (e) => {
+        if (e.target.id === "dialogBackdrop") closeDialog();
+      });
+
+      function compressImageFile(file, maxDim, quality) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error(t("errPhotoRead")));
+          reader.onload = () => {
+            const img = new Image();
+            img.onerror = () => reject(new Error(t("errPhotoRead")));
+            img.onload = () => {
+              let w = img.naturalWidth || img.width;
+              let h = img.naturalHeight || img.height;
+              if (!w || !h) return reject(new Error(t("errPhotoRead")));
+              if (w > maxDim || h > maxDim) {
+                if (w >= h) {
+                  h = Math.round((h * maxDim) / w);
+                  w = maxDim;
+                } else {
+                  w = Math.round((w * maxDim) / h);
+                  h = maxDim;
+                }
+              }
+              const canvas = document.createElement("canvas");
+              canvas.width = w;
+              canvas.height = h;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, 0, 0, w, h);
+              canvas.toBlob(
+                (blob) => {
+                  if (!blob) return reject(new Error(t("errPhotoRead")));
+                  resolve(blob);
+                },
+                "image/jpeg",
+                quality
+              );
+            };
+            img.src = reader.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function blobToDataUrl(blob) {
+        return new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onerror = () => reject(new Error("Read failed"));
+          r.onload = () => resolve(String(r.result || ""));
+          r.readAsDataURL(blob);
+        });
+      }
+
+      function getVideoDuration(file) {
+        return new Promise((resolve, reject) => {
+          const url = URL.createObjectURL(file);
+          const video = document.createElement("video");
+          video.preload = "metadata";
+          video.muted = true;
+          video.onloadedmetadata = () => {
+            const dur = video.duration;
+            URL.revokeObjectURL(url);
+            resolve(dur);
+          };
+          video.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error("Could not read video metadata"));
+          };
+          video.src = url;
+        });
+      }
+
+      function processUploadQueue() {
+        const active = state.post.media.filter((m) => m.status === "uploading").length;
+        const available = 2 - active;
+        if (available <= 0) return;
+
+        const queued = state.post.media.filter((m) => m.status === "queued").slice(0, available);
+        for (const item of queued) {
+          startSingleUpload(item);
+        }
+      }
+
+      async function startSingleUpload(mediaItem) {
+        mediaItem.status = "uploading";
+        mediaItem.progress = 0;
+        renderApp();
+
+        try {
+          const sign = await api("/api/upload-sign", {
+            method: "POST",
+            body: JSON.stringify({ type: mediaItem.type })
+          });
+
+          const form = new FormData();
+          form.append("file", mediaItem.file);
+          form.append("api_key", sign.api_key);
+          form.append("timestamp", String(sign.timestamp));
+          form.append("public_id", sign.public_id);
+          form.append("allowed_formats", sign.allowed_formats);
+          form.append("signature", sign.signature);
+
+          await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open(
+              "POST",
+              `https://api.cloudinary.com/v1_1/${encodeURIComponent(sign.cloud_name)}/${mediaItem.type}/upload`
+            );
+            xhr.upload.onprogress = (ev) => {
+              if (ev.lengthComputable) {
+                mediaItem.progress = Math.round((ev.loaded / ev.total) * 100);
+                const el = document.querySelector(`[data-make-cover="${mediaItem.uid}"] .media-progress`);
+                if (el) el.textContent = `${t("uploading")} ${mediaItem.progress}%`;
+              }
+            };
+            xhr.onload = () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                resolve();
+              } else {
+                reject(new Error("Upload failed"));
+              }
+            };
+            xhr.onerror = () => reject(new Error("Network error"));
+            xhr.send(form);
+          });
+
+          mediaItem.id = sign.public_id;
+          mediaItem.status = "done";
+          mediaItem.progress = 100;
+        } catch (e) {
+          mediaItem.status = "error";
+          mediaItem.errorText = e.message || "Upload failed";
+          showToast(mediaItem.errorText);
+        } finally {
+          renderApp();
+          processUploadQueue();
+        }
+      }
+
+      async function handlePhotoFiles(files) {
+        const existingPhotos = state.post.media.filter((m) => m.type === "image").length;
+        const room = 6 - existingPhotos;
+        if (room <= 0) {
+          showToast(t("errPhotoMax"));
+          return;
+        }
+        const slice = Array.from(files).slice(0, room);
+        if (files.length > room) {
+          showToast(t("errPhotoMax"));
+        }
+
+        for (const file of slice) {
+          try {
+            const blob = await compressImageFile(file, 1280, 0.8);
+            if (blob.size > 10 * 1024 * 1024) {
+              showToast(t("errPhotoBig"));
+              continue;
+            }
+            const uid = "m_" + Math.random().toString(36).slice(2, 10);
+            const previewUrl = URL.createObjectURL(blob);
+            state.post.media.push({
+              uid,
+              type: "image",
+              previewUrl,
+              id: "",
+              status: "queued",
+              progress: 0,
+              file: blob
+            });
+          } catch (e) {
+            showToast(e.message || t("errPhotoRead"));
+          }
+        }
+        renderApp();
+        processUploadQueue();
+      }
+
+      async function handleVideoFile(file) {
+        if (!file) return;
+        const hasVid = state.post.media.some((m) => m.type === "video");
+        if (hasVid) {
+          showToast(t("errVideoOne"));
+          return;
+        }
+        if (file.size > 30 * 1024 * 1024) {
+          showToast(t("errVideoBig"));
+          return;
+        }
+        try {
+          const duration = await getVideoDuration(file);
+          if (!Number.isFinite(duration) || duration > 10) {
+            showToast(t("errVideoLong"));
+            return;
+          }
+          const uid = "m_" + Math.random().toString(36).slice(2, 10);
+          const previewUrl = URL.createObjectURL(file);
+          state.post.media.push({
+            uid,
+            type: "video",
+            previewUrl,
+            id: "",
+            status: "queued",
+            progress: 0,
+            file
+          });
+          renderApp();
+          processUploadQueue();
+        } catch (e) {
+          showToast(e.message || t("errVideoLong"));
+        }
+      }
+
+      function validateStep3() {
+        const p = state.post;
+        const cat = state.config.categories[p.cat];
+        const errors = {};
+
+        for (const f of cat.fields) {
+          const v = p.attrs[f.key];
+          if (f.type === "select") {
+            if (f.required && !v) errors["attr_" + f.key] = t("reqErr");
+          } else if (f.type === "multiselect") {
+            if (f.required && (!Array.isArray(v) || v.length === 0)) {
+              errors["attr_" + f.key] = t("reqErr");
+            }
+          } else if (f.type === "text") {
+            const s = typeof v === "string" ? v.trim() : "";
+            if (f.required && !s) errors["attr_" + f.key] = t("reqErr");
+            else if (s && f.maxLength && s.length > f.maxLength) {
+              errors["attr_" + f.key] = `Max ${f.maxLength}`;
+            }
+          } else if (f.type === "number") {
+            if (v === undefined || v === null || v === "") {
+              if (f.required) errors["attr_" + f.key] = t("reqErr");
+            } else {
+              const num = Number(v);
+              if (!Number.isFinite(num) || (f.min !== undefined && num < f.min) || (f.max !== undefined && num > f.max)) {
+                errors["attr_" + f.key] = `${f.min ?? 0} - ${f.max ?? ""}`;
+              }
+            }
+          } else if (f.type === "date") {
+            if (f.required && !v) errors["attr_" + f.key] = t("reqErr");
+          }
+        }
+
+        if (!getRegionObj(p.region)) {
+          errors.region = t("regionErr");
+        }
+
+        const city = p.city.trim();
+        if (city.length < 2 || city.length > 40) {
+          errors.city = t("cityErr");
+        }
+
+        const place = p.place.trim();
+        if (place.length > 40) {
+          errors.place = t("placeErr");
+        }
+
+        const title = p.title.trim();
+        if (title.length < 3 || title.length > 60) errors.title = t("titleErr");
+
+        const priceStr = String(p.price).trim();
+        const priceNum = Number(priceStr);
+        if (!priceStr || !Number.isInteger(priceNum) || priceNum < 0 || priceNum > 100000000) {
+          errors.price = t("priceErr");
+        }
+
+        const desc = p.desc.trim();
+        if (desc.length < 10 || desc.length > 300) errors.desc = t("descErr");
+
+        p.errors = errors;
+        return Object.keys(errors).length === 0;
+      }
+
+      function validateStep5() {
+        const p = state.post;
+        const errors = {};
+        if (p.payMethod !== "CBE" && p.payMethod !== "Telebirr") {
+          errors.payMethod = t("payMethodErr");
+        }
+        if (p.payRef.trim().length < 3) {
+          errors.payRef = t("payRefErr");
+        }
+        if (!p.receiptDataUrl) {
+          errors.receipt = t("receiptErr");
+        }
+        p.errors = errors;
+        return Object.keys(errors).length === 0;
+      }
+
+      async function submitListing() {
+        const p = state.post;
+        if (!p.confirmLegal) {
+          p.errors = { confirmLegal: t("errConfirmLegal") };
+          renderApp();
+          return;
+        }
+        p.errors = {};
+        p.submitting = true;
+        renderApp();
+
+        try {
+          const plans = state.config.plans;
+          const fee = plans[p.plan] ?? 0;
+          const payload = {
+            cat: p.cat,
+            region: p.region,
+            city: p.city.trim(),
+            place: p.place.trim(),
+            title: p.title.trim(),
+            price: Number(p.price),
+            negotiable: Boolean(p.negotiable),
+            desc: p.desc.trim(),
+            attrs: p.attrs,
+            media: p.media
+              .filter((m) => m.status === "done" && m.id)
+              .map((m) => ({ type: m.type, id: m.id })),
+            plan: p.plan,
+            pay:
+              fee > 0
+                ? {
+                    method: p.payMethod,
+                    ref: p.payRef.trim(),
+                    receipt: p.receiptDataUrl
+                  }
+                : null
+          };
+
+          await api("/api/items", {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+
+          p.submitted = true;
+          p.submitting = false;
+          renderApp();
+        } catch (e) {
+          p.submitting = false;
+          p.errors = { submit: e.message };
+          renderApp();
+        }
+      }
+
+      async function loadBrowseItems() {
+        state.itemsLoading = true;
+        renderApp();
+        try {
+          const qs = new URLSearchParams();
+          if (state.regionFilter) qs.set("region", state.regionFilter);
+          if (state.cityFilter.trim()) qs.set("city", state.cityFilter.trim());
+          const qStr = qs.toString();
+          const data = await api(qStr ? `/api/items?${qStr}` : "/api/items");
+          state.items = Array.isArray(data.items) ? data.items : [];
+          syncSavedWithLive();
+        } catch (e) {
+          showToast(e.message);
+        } finally {
+          state.itemsLoading = false;
+          renderApp();
+        }
+      }
+
+      async function loadMineItems() {
+        state.mineLoading = true;
+        renderApp();
+        try {
+          const data = await api("/api/mine");
+          state.mine = Array.isArray(data.items) ? data.items : [];
+        } catch (e) {
+          showToast(e.message);
+        } finally {
+          state.mineLoading = false;
+          renderApp();
+        }
+      }
+
+      async function loadAdminItems() {
+        state.adminLoading = true;
+        renderApp();
+        try {
+          const data = await api(`/api/admin/items?tab=${encodeURIComponent(state.adminTab)}`);
+          state.adminItems = Array.isArray(data.items) ? data.items : [];
+          state.adminStats = data.stats || null;
+        } catch (e) {
+          showToast(e.message);
+        } finally {
+          state.adminLoading = false;
+          renderApp();
+        }
+      }
+
+      async function loadAdminUsers(append = false) {
+        state.usersLoading = true;
+        renderApp();
+        try {
+          const offset = append ? state.users.length : 0;
+          const qs = new URLSearchParams({
+            q: state.usersQuery.trim(),
+            filter: state.usersFilter,
+            limit: "30",
+            offset: String(offset)
+          });
+          const data = await api(`/api/admin/users?${qs.toString()}`);
+          const list = Array.isArray(data.users) ? data.users : [];
+          state.users = append ? state.users.concat(list) : list;
+          state.usersTotal = Number(data.total || 0);
+        } catch (e) {
+          showToast(e.message);
+        } finally {
+          state.usersLoading = false;
+          renderApp();
+        }
+      }
+
+      async function loadAdminAnalytics() {
+        state.analyticsLoading = true;
+        renderApp();
+        try {
+          const data = await api(`/api/admin/analytics?days=${encodeURIComponent(state.analyticsDays)}`);
+          state.analytics = data;
+        } catch (e) {
+          showToast(e.message);
+        } finally {
+          state.analyticsLoading = false;
+          renderApp();
+        }
+      }
+
+      async function loadAdminAudit(append = false) {
+        state.auditLoading = true;
+        renderApp();
+        try {
+          const qs = new URLSearchParams({ limit: "50" });
+          if (append && state.auditNext !== null) {
+            qs.set("before", String(state.auditNext));
+          }
+          const data = await api(`/api/admin/audit?${qs.toString()}`);
+          const rows = Array.isArray(data.rows) ? data.rows : [];
+          state.auditRows = append ? state.auditRows.concat(rows) : rows;
+          state.auditNext = data.next !== undefined ? data.next : null;
+        } catch (e) {
+          showToast(e.message);
+        } finally {
+          state.auditLoading = false;
+          renderApp();
+        }
+      }
+
+      async function loadAdminSettings() {
+        state.settingsLoading = true;
+        state.settingsError = "";
+        renderApp();
+        try {
+          const data = await api("/api/admin/settings");
+          state.settingsDraft = JSON.parse(JSON.stringify(data));
+        } catch (e) {
+          showToast(e.message);
+        } finally {
+          state.settingsLoading = false;
+          renderApp();
+        }
+      }
+
+      function loadCurrentAdminSection() {
+        if (state.adminSection === "users") return loadAdminUsers(false);
+        if (state.adminSection === "analytics") return loadAdminAnalytics();
+        if (state.adminSection === "audit" && state.me && state.me.isOwner) return loadAdminAudit(false);
+        if (state.adminSection === "settings") return loadAdminSettings();
+        return loadAdminItems();
+      }
+
+      function validateAndCollectSettingsDraft() {
+        const s = state.settingsDraft;
+        if (!s) return null;
+        const std = Number(s.plans.standard);
+        const feat = Number(s.plans.featured);
+        if (!Number.isInteger(std) || std < 0 || std > 100000 || !Number.isInteger(feat) || feat < 0 || feat > 100000) {
+          state.settingsError = t("settingsErrFee");
+          return null;
+        }
+        const cbe = {
+          label: String(s.payment.CBE.label || "").trim(),
+          number: String(s.payment.CBE.number || "").trim(),
+          holder: String(s.payment.CBE.holder || "").trim()
+        };
+        const tb = {
+          label: String(s.payment.Telebirr.label || "").trim(),
+          number: String(s.payment.Telebirr.number || "").trim(),
+          holder: String(s.payment.Telebirr.holder || "").trim()
+        };
+        for (const pm of [cbe, tb]) {
+          if (!pm.label || pm.label.length > 60 || !pm.number || pm.number.length > 40 || !pm.holder || pm.holder.length > 60) {
+            state.settingsError = t("settingsErrPay");
+            return null;
+          }
+        }
+        const mp = Number(s.limits.max_pending);
+        const ai = Number(s.limits.ai_daily);
+        const up = Number(s.limits.upload_daily);
+        if (
+          !Number.isInteger(mp) || mp < 1 || mp > 1000 ||
+          !Number.isInteger(ai) || ai < 1 || ai > 1000 ||
+          !Number.isInteger(up) || up < 1 || up > 1000
+        ) {
+          state.settingsError = t("settingsErrLimit");
+          return null;
+        }
+        state.settingsError = "";
+        return {
+          plans: { free: 0, standard: std, featured: feat },
+          payment: { CBE: cbe, Telebirr: tb },
+          limits: { max_pending: mp, ai_daily: ai, upload_daily: up }
+        };
+      }
+
+      function bindEvents() {
+        const langSelect = document.getElementById("langSelect");
+        if (langSelect) {
+          langSelect.addEventListener("change", (e) => {
+            state.lang = e.target.value;
+            localStorage.setItem("milkii_lang", state.lang);
+            api("/api/me").catch(() => {});
+            renderApp();
+          });
+        }
+
+        document.querySelectorAll("[data-nav]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const target = btn.getAttribute("data-nav");
+            state.view = target;
+            if (target === "browse") loadBrowseItems();
+            else if (target === "mine") loadMineItems();
+            else if (target === "admin") loadCurrentAdminSection();
+            else renderApp();
+          });
+        });
+
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) {
+          searchInput.addEventListener("input", (e) => {
+            const pos = e.target.selectionStart;
+            state.search = e.target.value;
+            renderApp();
+            const again = document.getElementById("searchInput");
+            if (again) {
+              again.focus();
+              try { again.setSelectionRange(pos, pos); } catch {}
+            }
+          });
+        }
+
+        const clearSearchBtn = document.getElementById("clearSearchBtn");
+        if (clearSearchBtn) {
+          clearSearchBtn.addEventListener("click", () => {
+            state.search = "";
+            renderApp();
+          });
+        }
+
+        const regionFilter = document.getElementById("regionFilter");
+        if (regionFilter) {
+          regionFilter.addEventListener("change", (e) => {
+            state.regionFilter = e.target.value;
+            localStorage.setItem("milkii_region", state.regionFilter);
+            loadBrowseItems();
+          });
+        }
+
+        const cityFilter = document.getElementById("cityFilter");
+        if (cityFilter) {
+          cityFilter.addEventListener("input", (e) => {
+            const pos = e.target.selectionStart;
+            state.cityFilter = e.target.value;
+            renderApp();
+            const again = document.getElementById("cityFilter");
+            if (again) {
+              again.focus();
+              try { again.setSelectionRange(pos, pos); } catch {}
+            }
+          });
+        }
+
+        document.querySelectorAll("[data-cat]").forEach((chip) => {
+          chip.addEventListener("click", () => {
+            state.catFilter = chip.getAttribute("data-cat");
+            renderApp();
+          });
+        });
+
+        document.querySelectorAll("[data-open-item]").forEach((card) => {
+          card.addEventListener("click", () => {
+            const id = Number(card.getAttribute("data-open-item"));
+            const item =
+              state.items.find((x) => x.id === id) ||
+              state.saved.find((x) => x.id === id);
+            if (item) openItemSheet(item, false);
+          });
+        });
+
+        const startPostBtn = document.getElementById("startPostBtn");
+        if (startPostBtn) {
+          startPostBtn.addEventListener("click", () => {
+            if (!state.me || !state.me.username) {
+              showToast(t("noTgUsername"));
+              return;
+            }
+            state.post = createEmptyPost();
+            state.view = "post";
+            renderApp();
+          });
+        }
+
+        document.querySelectorAll("[data-mine-sold]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = Number(btn.getAttribute("data-mine-sold"));
+            openConfirmDialog(t("confirmSold"), async () => {
+              try {
+                await api(`/api/items/${id}/sold`, { method: "POST" });
+                loadMineItems();
+              } catch (e) {
+                showToast(e.message);
+              }
+            });
+          });
+        });
+
+        document.querySelectorAll("[data-mine-delete]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = Number(btn.getAttribute("data-mine-delete"));
+            openConfirmDialog(t("confirmDelete"), async () => {
+              try {
+                await api(`/api/items/${id}/delete`, { method: "POST" });
+                loadMineItems();
+              } catch (e) {
+                showToast(e.message);
+              }
+            });
+          });
+        });
+
+        document.querySelectorAll("[data-admin-section]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            state.adminSection = btn.getAttribute("data-admin-section");
+            loadCurrentAdminSection();
+          });
+        });
+
+        document.querySelectorAll("[data-admin-tab]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            state.adminTab = btn.getAttribute("data-admin-tab");
+            loadAdminItems();
+          });
+        });
+
+        document.querySelectorAll("[data-admin-view]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = Number(btn.getAttribute("data-admin-view"));
+            const it = state.adminItems.find((x) => x.id === id);
+            if (it) openItemSheet(it, true);
+          });
+        });
+
+        document.querySelectorAll("[data-admin-receipt]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = Number(btn.getAttribute("data-admin-receipt"));
+            openReceiptDialog(id);
+          });
+        });
+
+        document.querySelectorAll("[data-admin-approve]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            const id = Number(btn.getAttribute("data-admin-approve"));
+            try {
+              await api(`/api/admin/items/${id}/approve`, { method: "POST" });
+              loadAdminItems();
+            } catch (e) {
+              showToast(e.message);
+            }
+          });
+        });
+
+        document.querySelectorAll("[data-admin-reject]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = Number(btn.getAttribute("data-admin-reject"));
+            openRejectDialog(async (reason) => {
+              try {
+                await api(`/api/admin/items/${id}/reject`, {
+                  method: "POST",
+                  body: JSON.stringify({ reason })
+                });
+                loadAdminItems();
+              } catch (e) {
+                showToast(e.message);
+              }
+            });
+          });
+        });
+
+        document.querySelectorAll("[data-admin-ban]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = Number(btn.getAttribute("data-admin-ban"));
+            openBanDialog(async (reason) => {
+              try {
+                await api(`/api/admin/items/${id}/ban`, {
+                  method: "POST",
+                  body: JSON.stringify({ reason })
+                });
+                showToast(t("bannedOk"));
+                loadAdminItems();
+              } catch (e) {
+                showToast(e.message);
+              }
+            });
+          });
+        });
+
+        document.querySelectorAll("[data-admin-delete]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const id = Number(btn.getAttribute("data-admin-delete"));
+            openConfirmDialog(t("confirmDelete"), async () => {
+              try {
+                await api(`/api/items/${id}/delete`, { method: "POST" });
+                loadAdminItems();
+              } catch (e) {
+                showToast(e.message);
+              }
+            });
+          });
+        });
+
+        const usersSearchInput = document.getElementById("usersSearchInput");
+        if (usersSearchInput) {
+          usersSearchInput.addEventListener("input", (e) => {
+            const pos = e.target.selectionStart;
+            state.usersQuery = e.target.value;
+            clearTimeout(window.__usersSearchTimer);
+            window.__usersSearchTimer = setTimeout(() => {
+              loadAdminUsers(false).then(() => {
+                const again = document.getElementById("usersSearchInput");
+                if (again) {
+                  again.focus();
+                  try { again.setSelectionRange(pos, pos); } catch {}
+                }
+              });
+            }, 250);
+          });
+        }
+
+        const clearUsersSearchBtn = document.getElementById("clearUsersSearchBtn");
+        if (clearUsersSearchBtn) {
+          clearUsersSearchBtn.addEventListener("click", () => {
+            state.usersQuery = "";
+            loadAdminUsers(false);
+          });
+        }
+
+        document.querySelectorAll("[data-users-filter]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            state.usersFilter = btn.getAttribute("data-users-filter");
+            loadAdminUsers(false);
+          });
+        });
+
+        document.querySelectorAll("[data-user-ban]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const uid = btn.getAttribute("data-user-ban");
+            openBanDialog(async (reason) => {
+              try {
+                await api(`/api/admin/users/${encodeURIComponent(uid)}/ban`, {
+                  method: "POST",
+                  body: JSON.stringify({ reason })
+                });
+                showToast(t("bannedOk"));
+                loadAdminUsers(false);
+              } catch (e) {
+                showToast(e.message);
+              }
+            });
+          });
+        });
+
+        document.querySelectorAll("[data-user-unban]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const uid = btn.getAttribute("data-user-unban");
+            openConfirmDialog(t("confirmUnban"), async () => {
+              try {
+                await api(`/api/admin/users/${encodeURIComponent(uid)}/unban`, { method: "POST" });
+                showToast(t("unbannedOk"));
+                loadAdminUsers(false);
+              } catch (e) {
+                showToast(e.message);
+              }
+            });
+          });
+        });
+
+        const usersLoadMoreBtn = document.getElementById("usersLoadMoreBtn");
+        if (usersLoadMoreBtn) {
+          usersLoadMoreBtn.addEventListener("click", () => loadAdminUsers(true));
+        }
+
+        document.querySelectorAll("[data-analytics-days]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            state.analyticsDays = Number(btn.getAttribute("data-analytics-days")) || 30;
+            loadAdminAnalytics();
+          });
+        });
+
+        const auditLoadMoreBtn = document.getElementById("auditLoadMoreBtn");
+        if (auditLoadMoreBtn) {
+          auditLoadMoreBtn.addEventListener("click", () => loadAdminAudit(true));
+        }
+
+        if (state.settingsDraft) {
+          const bindSetInput = (id, setter) => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener("input", () => setter(el.value));
+          };
+          bindSetInput("setPlanStandard", (v) => { state.settingsDraft.plans.standard = v; });
+          bindSetInput("setPlanFeatured", (v) => { state.settingsDraft.plans.featured = v; });
+          bindSetInput("setCbeLabel", (v) => { state.settingsDraft.payment.CBE.label = v; });
+          bindSetInput("setCbeNumber", (v) => { state.settingsDraft.payment.CBE.number = v; });
+          bindSetInput("setCbeHolder", (v) => { state.settingsDraft.payment.CBE.holder = v; });
+          bindSetInput("setTbLabel", (v) => { state.settingsDraft.payment.Telebirr.label = v; });
+          bindSetInput("setTbNumber", (v) => { state.settingsDraft.payment.Telebirr.number = v; });
+          bindSetInput("setTbHolder", (v) => { state.settingsDraft.payment.Telebirr.holder = v; });
+          bindSetInput("setLimPending", (v) => { state.settingsDraft.limits.max_pending = v; });
+          bindSetInput("setLimAi", (v) => { state.settingsDraft.limits.ai_daily = v; });
+          bindSetInput("setLimUpload", (v) => { state.settingsDraft.limits.upload_daily = v; });
+        }
+
+        const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+        if (saveSettingsBtn) {
+          saveSettingsBtn.addEventListener("click", () => {
+            const payload = validateAndCollectSettingsDraft();
+            if (!payload) {
+              renderApp();
+              return;
+            }
+            openPromptDialog(t("settingsSaveConfirm"), t("confirm"), async () => {
+              state.settingsSaving = true;
+              renderApp();
+              try {
+                const saved = await api("/api/admin/settings", {
+                  method: "PUT",
+                  body: JSON.stringify(payload)
+                });
+                state.settingsDraft = JSON.parse(JSON.stringify(saved));
+                state.config = await api("/api/config");
+                state.settingsError = "";
+                showToast(t("settingsSavedOk"));
+              } catch (e) {
+                state.settingsError = e.message;
+                showToast(e.message);
+              } finally {
+                state.settingsSaving = false;
+                renderApp();
+              }
+            });
+          });
+        }
+
+        const aiForm = document.getElementById("aiForm");
+        if (aiForm) {
+          aiForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (state.aiBusy) return;
+            const input = document.getElementById("aiInput");
+            const text = input.value.trim();
+            if (!text) return;
+            state.aiMessages.push({ role: "user", content: text });
+            state.aiBusy = true;
+            renderApp();
+            try {
+              const res = await api("/api/ai", {
+                method: "POST",
+                body: JSON.stringify({ task: "chat", messages: state.aiMessages })
+              });
+              state.aiMessages.push({ role: "assistant", content: res.text });
+            } catch (err) {
+              state.aiMessages.push({ role: "assistant", content: err.message });
+            } finally {
+              state.aiBusy = false;
+              renderApp();
+            }
+          });
+        }
+
+        const postDoneBtn = document.getElementById("postDoneBtn");
+        if (postDoneBtn) {
+          postDoneBtn.addEventListener("click", () => {
+            state.view = "mine";
+            loadMineItems();
+          });
+        }
+
+        const postBackBtn = document.getElementById("postBackBtn");
+        if (postBackBtn) {
+          postBackBtn.addEventListener("click", () => {
+            const p = state.post;
+            if (p.step === 1) {
+              state.view = "browse";
+            } else if (p.step === 6 && p.plan === "free") {
+              p.step = 4;
+            } else {
+              p.step -= 1;
+            }
+            p.errors = {};
+            renderApp();
+          });
+        }
+
+        const postNextBtn = document.getElementById("postNextBtn");
+        if (postNextBtn) {
+          postNextBtn.addEventListener("click", () => {
+            const p = state.post;
+            if (p.step === 1) {
+              if (!p.cat) return;
+              p.step = 2;
+            } else if (p.step === 2) {
+              const hasBusy = p.media.some((m) => m.status === "queued" || m.status === "uploading");
+              const hasErr = p.media.some((m) => m.status === "error");
+              const donePhotos = p.media.filter((m) => m.type === "image" && m.status === "done").length;
+              if (hasBusy || hasErr || donePhotos < 1) {
+                showToast(hasBusy || hasErr ? t("errWaitUploads") : t("errNeedPhoto"));
+                return;
+              }
+              p.step = 3;
+            } else if (p.step === 3) {
+              if (!validateStep3()) {
+                renderApp();
+                return;
+              }
+              p.step = 4;
+            } else if (p.step === 4) {
+              p.step = p.plan === "free" ? 6 : 5;
+            } else if (p.step === 5) {
+              if (!validateStep5()) {
+                renderApp();
+                return;
+              }
+              p.step = 6;
+            }
+            renderApp();
+          });
+        }
+
+        const postSubmitBtn = document.getElementById("postSubmitBtn");
+        if (postSubmitBtn) {
+          postSubmitBtn.addEventListener("click", submitListing);
+        }
+
+        document.querySelectorAll("[data-pick-cat]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const newCat = btn.getAttribute("data-pick-cat");
+            if (state.post.cat !== newCat) {
+              state.post.cat = newCat;
+              state.post.attrs = {};
+              state.post.errors = {};
+            }
+            renderApp();
+          });
+        });
+
+        const photoPicker = document.getElementById("photoPicker");
+        if (photoPicker) {
+          photoPicker.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files.length) {
+              handlePhotoFiles(e.target.files);
+            }
+          });
+        }
+
+        const videoPicker = document.getElementById("videoPicker");
+        if (videoPicker) {
+          videoPicker.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0]) {
+              handleVideoFile(e.target.files[0]);
+            }
+          });
+        }
+
+        document.querySelectorAll("[data-remove-media]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const uid = btn.getAttribute("data-remove-media");
+            const idx = state.post.media.findIndex((m) => m.uid === uid);
+            if (idx >= 0) {
+              const removed = state.post.media[idx];
+              if (removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+              state.post.media.splice(idx, 1);
+              renderApp();
+              processUploadQueue();
+            }
+          });
+        });
+
+        document.querySelectorAll("[data-retry-media]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const uid = btn.getAttribute("data-retry-media");
+            const item = state.post.media.find((m) => m.uid === uid);
+            if (item) {
+              item.status = "queued";
+              item.progress = 0;
+              renderApp();
+              processUploadQueue();
+            }
+          });
+        });
+
+        document.querySelectorAll("[data-make-cover]").forEach((tile) => {
+          tile.addEventListener("click", () => {
+            const uid = tile.getAttribute("data-make-cover");
+            const idx = state.post.media.findIndex((m) => m.uid === uid);
+            if (idx > 0 && state.post.media[idx].type === "image") {
+              const [chosen] = state.post.media.splice(idx, 1);
+              state.post.media.unshift(chosen);
+              renderApp();
+            }
+          });
+        });
+
+        document.querySelectorAll("[data-attr-input]").forEach((el) => {
+          const evName = el.tagName === "SELECT" || el.type === "date" ? "change" : "input";
+          el.addEventListener(evName, () => {
+            const key = el.getAttribute("data-attr-input");
+            state.post.attrs[key] = el.value;
+            const countSpan = el.parentElement.querySelector(".char-count");
+            const max = el.getAttribute("maxlength");
+            if (countSpan && max) {
+              countSpan.textContent = `${el.value.length}/${max}`;
+            }
+          });
+        });
+
+        document.querySelectorAll("[data-attr-multi]").forEach((cb) => {
+          cb.addEventListener("change", () => {
+            const key = cb.getAttribute("data-attr-multi");
+            const arr = Array.isArray(state.post.attrs[key]) ? state.post.attrs[key] : [];
+            if (cb.checked) {
+              if (!arr.includes(cb.value)) arr.push(cb.value);
+            } else {
+              const idx = arr.indexOf(cb.value);
+              if (idx >= 0) arr.splice(idx, 1);
+            }
+            state.post.attrs[key] = arr;
+          });
+        });
+
+        const fRegion = document.getElementById("fRegion");
+        if (fRegion) {
+          fRegion.addEventListener("change", (e) => {
+            state.post.region = e.target.value;
+            if (state.post.errors.region) delete state.post.errors.region;
+            renderApp();
+          });
+        }
+
+        const fCity = document.getElementById("fCity");
+        if (fCity) {
+          fCity.addEventListener("input", () => {
+            state.post.city = fCity.value;
+            const c = document.getElementById("cityCount");
+            if (c) c.textContent = `${fCity.value.length}/40`;
+          });
+        }
+
+        document.querySelectorAll("[data-pick-city]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            state.post.city = btn.getAttribute("data-pick-city");
+            renderApp();
+          });
+        });
+
+        const fPlace = document.getElementById("fPlace");
+        if (fPlace) {
+          fPlace.addEventListener("input", () => {
+            state.post.place = fPlace.value;
+            const c = document.getElementById("placeCount");
+            if (c) c.textContent = `${fPlace.value.length}/40`;
+          });
+        }
+
+        const fTitle = document.getElementById("fTitle");
+        if (fTitle) {
+          fTitle.addEventListener("input", () => {
+            state.post.title = fTitle.value;
+            const c = document.getElementById("titleCount");
+            if (c) c.textContent = `${fTitle.value.length}/60`;
+          });
+        }
+
+        const fPrice = document.getElementById("fPrice");
+        if (fPrice) {
+          fPrice.addEventListener("input", () => {
+            state.post.price = fPrice.value;
+          });
+        }
+
+        const fNeg = document.getElementById("fNegotiable");
+        if (fNeg) {
+          fNeg.addEventListener("change", () => {
+            state.post.negotiable = fNeg.checked;
+          });
+        }
+
+        const fDesc = document.getElementById("fDesc");
+        if (fDesc) {
+          fDesc.addEventListener("input", () => {
+            state.post.desc = fDesc.value;
+            const c = document.getElementById("descCount");
+            if (c) c.textContent = `${fDesc.value.length}/300`;
+          });
+        }
+
+        document.querySelectorAll("[data-pick-plan]").forEach((card) => {
+          card.addEventListener("click", () => {
+            state.post.plan = card.getAttribute("data-pick-plan");
+            renderApp();
+          });
+        });
+
+        document.querySelectorAll("[data-pay-method]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            state.post.payMethod = btn.getAttribute("data-pay-method");
+            renderApp();
+          });
+        });
+
+        const copyPayBtn = document.getElementById("copyPayBtn");
+        if (copyPayBtn) {
+          copyPayBtn.addEventListener("click", async () => {
+            const payCfg = (state.config && state.config.payment) || {};
+            const pm = payCfg[state.post.payMethod] || payCfg.CBE || { number: "" };
+            if (!pm.number) return;
+            try {
+              await navigator.clipboard.writeText(pm.number);
+              showToast(t("copied"));
+            } catch {
+              showToast(pm.number);
+            }
+          });
+        }
+
+        const fPayRef = document.getElementById("fPayRef");
+        if (fPayRef) {
+          fPayRef.addEventListener("input", () => {
+            state.post.payRef = fPayRef.value;
+          });
+        }
+
+        const receiptPicker = document.getElementById("receiptPicker");
+        if (receiptPicker) {
+          receiptPicker.addEventListener("change", async (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            try {
+              const blob = await compressImageFile(file, 900, 0.7);
+              const dataUrl = await blobToDataUrl(blob);
+              if (dataUrl.length >= 700000) {
+                showToast(t("errPhotoBig"));
+                return;
+              }
+              state.post.receiptDataUrl = dataUrl;
+              renderApp();
+            } catch (err) {
+              showToast(err.message || t("errPhotoRead"));
+            }
+          });
+        }
+
+        const fConfirmLegal = document.getElementById("fConfirmLegal");
+        if (fConfirmLegal) {
+          fConfirmLegal.addEventListener("change", () => {
+            state.post.confirmLegal = fConfirmLegal.checked;
+          });
+        }
+      }
+
+      async function boot() {
+        document.getElementById("root").innerHTML = `<div class="gate-message">${esc(t("loading"))}</div>`;
+        try {
+          const [cfg, me] = await Promise.all([api("/api/config"), api("/api/me")]);
+          state.config = cfg;
+          state.me = me;
+          if (state.regionFilter && !getRegionObj(state.regionFilter)) {
+            state.regionFilter = "";
+            localStorage.removeItem("milkii_region");
+          }
+          await loadBrowseItems();
+
+          const canAskWrite =
+            me &&
+            !me.canDm &&
+            !localStorage.getItem("milkii_asked_write") &&
+            tg &&
+            typeof tg.requestWriteAccess === "function";
+          if (canAskWrite) {
+            localStorage.setItem("milkii_asked_write", "1");
+            openPromptDialog(t("allowDmPrompt"), t("allowBtn"), () => {
+              try {
+                tg.requestWriteAccess();
+              } catch {}
+            });
+          }
+        } catch (e) {
+          document.getElementById("root").innerHTML = `<div class="gate-message">${esc(e.message)}</div>`;
+        }
+      }
+
+      boot();
+    }
+  </script>
+</body>
+</html>
