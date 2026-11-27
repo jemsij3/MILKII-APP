@@ -741,21 +741,18 @@ const CATEGORIES = {
 const VALID_REGION_SET = new Set(REGIONS.map((r) => r.v));
 const encoder = new TextEncoder();
 
-const SCHEMA_TABLE_STATEMENTS = [
+const SCHEMA_STATEMENTS = [
   `CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, owner_id TEXT NOT NULL, tg TEXT, cat TEXT NOT NULL, title TEXT NOT NULL, price INTEGER NOT NULL, negotiable INTEGER DEFAULT 0, region TEXT, city TEXT, place TEXT, descr TEXT, attrs TEXT DEFAULT '{}', media TEXT DEFAULT '[]', status TEXT NOT NULL DEFAULT 'pending', reject_reason TEXT, reports INTEGER DEFAULT 0, featured INTEGER DEFAULT 0, plan TEXT, fee INTEGER DEFAULT 0, pay_method TEXT, pay_ref TEXT, receipt TEXT, verified INTEGER DEFAULT 0, created_at INTEGER, approved_at INTEGER, text_lang TEXT DEFAULT 'en')`,
+  `CREATE INDEX IF NOT EXISTS idx_items_status ON items(status)`,
+  `CREATE INDEX IF NOT EXISTS idx_items_region_city ON items(region, city)`,
+  `CREATE INDEX IF NOT EXISTS idx_items_created ON items(created_at)`,
   `CREATE TABLE IF NOT EXISTS reports (item_id INTEGER, user_id TEXT, PRIMARY KEY (item_id, user_id))`,
   `CREATE TABLE IF NOT EXISTS banned (user_id TEXT PRIMARY KEY, username TEXT, reason TEXT, banned_at INTEGER, banned_by TEXT)`,
   `CREATE TABLE IF NOT EXISTS ai_usage (user_id TEXT, day TEXT, n INTEGER, PRIMARY KEY (user_id, day))`,
   `CREATE TABLE IF NOT EXISTS upload_usage (user_id TEXT, day TEXT, n INTEGER, PRIMARY KEY (user_id, day))`,
   `CREATE TABLE IF NOT EXISTS users (user_id TEXT PRIMARY KEY, username TEXT, first_name TEXT, lang TEXT DEFAULT 'en', can_dm INTEGER DEFAULT 0, first_seen INTEGER, last_seen INTEGER)`,
   `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_by TEXT, updated_at INTEGER)`,
-  `CREATE TABLE IF NOT EXISTS audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, admin_id TEXT NOT NULL, admin_username TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, details TEXT, created_at INTEGER NOT NULL)`
-];
-
-const SCHEMA_INDEX_STATEMENTS = [
-  `CREATE INDEX IF NOT EXISTS idx_items_status ON items(status)`,
-  `CREATE INDEX IF NOT EXISTS idx_items_region_city ON items(region, city)`,
-  `CREATE INDEX IF NOT EXISTS idx_items_created ON items(created_at)`,
+  `CREATE TABLE IF NOT EXISTS audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, admin_id TEXT NOT NULL, admin_username TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, details TEXT, created_at INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at)`
 ];
 
@@ -779,28 +776,32 @@ async function ensureMissingColumns(db, tableName, columnsToEnsure) {
   }
 }
 
-async function ensureDatabaseSchema(db) {
-  if (schemaReady) return;
+async function ensureSchema(env) {
+  if (schemaReady) return true;
+  if (!env || !env.DB || typeof env.DB.batch !== "function") {
+    return false;
+  }
   if (!schemaPromise) {
     schemaPromise = (async () => {
-      await db.batch(SCHEMA_TABLE_STATEMENTS.map((sql) => db.prepare(sql)));
-      await ensureMissingColumns(db, "items", [
+      await env.DB.batch(SCHEMA_STATEMENTS.map((sql) => env.DB.prepare(sql)));
+      await ensureMissingColumns(env.DB, "items", [
         { name: "approved_at", def: "approved_at INTEGER" },
         { name: "text_lang", def: "text_lang TEXT DEFAULT 'en'" }
       ]);
-      await ensureMissingColumns(db, "banned", [
+      await ensureMissingColumns(env.DB, "banned", [
         { name: "reason", def: "reason TEXT" },
         { name: "banned_at", def: "banned_at INTEGER" },
         { name: "banned_by", def: "banned_by TEXT" }
       ]);
-      await db.batch(SCHEMA_INDEX_STATEMENTS.map((sql) => db.prepare(sql)));
       schemaReady = true;
-    })().catch((e) => {
+      return true;
+    })().catch(() => {
+      schemaReady = false;
       schemaPromise = null;
-      throw e;
+      return false;
     });
   }
-  await schemaPromise;
+  return schemaPromise;
 }
 
 function json(data, status = 200) {
@@ -2094,6 +2095,70 @@ export async function onRequest(context) {
     : [];
   const method = request.method.toUpperCase();
 
+  // GET /api/health (public, no login needed)
+  if (method === "GET" && route.length === 1 && route[0] === "health") {
+    let database = false;
+    try {
+      if (env && env.DB && typeof env.DB.prepare === "function") {
+        await env.DB.prepare("SELECT 1").first();
+        database = await ensureSchema(env);
+      }
+    } catch {
+      database = false;
+    }
+
+    const ai = Boolean(env && env.AI);
+    const bot_token = Boolean(getBotToken(env));
+    const admin_ids = Boolean(
+      String((env && (env.TELEGRAM_ADMINS_ID || env.ADMIN_IDS)) || "").trim()
+    );
+    const owner_ids = Boolean(
+      String((env && (env.OWNER_IDS || env.TELEGRAM_ADMINS_ID || env.ADMIN_IDS)) || "").trim()
+    );
+    const cloudinary = Boolean(
+      String((env && env.CLOUDINARY_CLOUD_NAME) || "").trim() &&
+        String((env && env.CLOUDINARY_API_KEY) || "").trim() &&
+        String((env && env.CLOUDINARY_API_SECRET) || "").trim()
+    );
+
+    const checks = { database, ai, bot_token, admin_ids, owner_ids, cloudinary };
+    const hintMap = {
+      database:
+        "Database not connected: in Cloudflare, go to Settings, Bindings, and add a D1 database named DB.",
+      ai:
+        "Workers AI not connected: in Cloudflare, go to Settings, Bindings, and add Workers AI named AI.",
+      bot_token:
+        "Bot token missing: in Cloudflare, go to Settings, Variables and Secrets, and add TELEGRAM_BOT_TOKEN.",
+      admin_ids:
+        "Admin IDs missing: in Cloudflare, go to Settings, Variables and Secrets, and add TELEGRAM_ADMINS_ID.",
+      owner_ids:
+        "Owner IDs missing: in Cloudflare, go to Settings, Variables and Secrets, and add TELEGRAM_ADMINS_ID (or OWNER_IDS).",
+      cloudinary:
+        "Cloudinary not configured: in Cloudflare, go to Settings, Variables and Secrets, and add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET."
+    };
+
+    const missing = [];
+    const hints = [];
+    for (const key of ["database", "ai", "bot_token", "admin_ids", "owner_ids", "cloudinary"]) {
+      if (!checks[key]) {
+        missing.push(key);
+        hints.push(hintMap[key]);
+      }
+    }
+
+    return json({
+      ok: missing.length === 0,
+      checks,
+      missing,
+      hints
+    });
+  }
+
+  const schemaOk = await ensureSchema(env);
+  if (!schemaOk) {
+    return err("Database is not connected. Check the DB binding.", 503);
+  }
+
   // POST /api/webhook (Telegram Bot API webhook verified via TELEGRAM_WEBHOOK_SECRET)
   if (method === "POST" && route.length === 1 && route[0] === "webhook") {
     const expectedSecret = getWebhookSecret(env);
@@ -2104,11 +2169,7 @@ export async function onRequest(context) {
     if (!timingSafeEqualHex(providedSecret, expectedSecret)) {
       return err("Unauthorized webhook request.", 401);
     }
-    if (!env || !env.DB) {
-      return err("Database binding DB is not configured.", 500);
-    }
     try {
-      await ensureDatabaseSchema(env.DB);
       const update = await readJsonBody(request);
       const msg = update && update.message;
       const from = msg && msg.from;
@@ -2153,13 +2214,7 @@ export async function onRequest(context) {
     return err("Unauthorized. Please open MILKII APP from Telegram.", 401);
   }
 
-  if (!env || !env.DB) {
-    return err("Database binding DB is not configured.", 500);
-  }
-
   try {
-    await ensureDatabaseSchema(env.DB);
-
     // GET /api/config
     if (method === "GET" && route.length === 1 && route[0] === "config") {
       const settings = await getSettings(env.DB);
