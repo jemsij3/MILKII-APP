@@ -120,27 +120,11 @@ You need free accounts on these services:
    - `functions/api/[[route]].js` inside `functions/api`
 3. Make sure no secrets, tokens, or passwords are inside any file you commit.
 
-### 5. Create the Cloudflare D1 database and run `schema.sql`
+### 5. Create the Cloudflare D1 database
 1. Log in to the Cloudflare Dashboard.
 2. In the left sidebar, go to **Storage & Databases > D1 SQL Database**.
 3. Click **Create** (or **Create database**), enter the name `milkii-db`, and create it.
-4. Open `milkii-db` and click the **Console** tab.
-5. Copy the entire contents of `schema.sql`, paste it into the Console, and click **Execute**.
-
-> **If you already have an older MILKII database:** Do not drop your tables. Instead, run the new migration SQL statements one by one in the D1 **Console**:
-> ```sql
-> CREATE TABLE IF NOT EXISTS users (user_id TEXT PRIMARY KEY, username TEXT, first_name TEXT, lang TEXT DEFAULT 'en', can_dm INTEGER DEFAULT 0, first_seen INTEGER, last_seen INTEGER);
-> CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_by TEXT, updated_at INTEGER);
-> CREATE TABLE IF NOT EXISTS audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, admin_id TEXT NOT NULL, admin_username TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, details TEXT, created_at INTEGER NOT NULL);
-> CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at);
-> CREATE INDEX IF NOT EXISTS idx_items_created ON items(created_at);
-> ALTER TABLE items ADD COLUMN approved_at INTEGER;
-> ALTER TABLE items ADD COLUMN text_lang TEXT DEFAULT 'en';
-> ALTER TABLE banned ADD COLUMN reason TEXT;
-> ALTER TABLE banned ADD COLUMN banned_at INTEGER;
-> ALTER TABLE banned ADD COLUMN banned_by TEXT;
-> ```
-> If you see a `duplicate column` error on an `ALTER TABLE` line, it simply means that column was already added earlier.
+4. You do **not** need to create tables manually in the D1 Console: as soon as you bind `milkii-db` as `DB` and open MILKII APP in Telegram, `functions/api/[[route]].js` automatically creates all required tables, indexes, and missing columns on first run. (`schema.sql` and `migration.sql` are kept in the repository only as reference.)
 
 ### 6. Create the Cloudflare Pages project from GitHub
 1. In the Cloudflare Dashboard, go to **Workers & Pages**.
@@ -262,7 +246,7 @@ Non-owner admins can view the **Settings** screen, but only an Owner can save ch
 | --- | --- | --- |
 | `"Please open MILKII APP from Telegram."` appears in a web browser | The page was opened outside Telegram, so `Telegram.WebApp.initData` is empty | Open the app from your Telegram bot's Menu Button or Mini App link |
 | Blank page after deploying to Cloudflare Pages | **Build output directory** was not set to `public` or a build command ran | Set **Build command** to empty and **Build output directory** to `public`, then redeploy |
-| `"Server error"` or failed API calls when loading the app | The D1 binding `DB` is missing, named wrong, or `schema.sql` was not executed | Bind `milkii-db` to variable name `DB` (all caps), run `schema.sql` in D1 Console, and redeploy |
+| `"Server error"` or failed API calls when loading the app | The D1 binding `DB` is missing or named wrong | Bind `milkii-db` to variable name `DB` (all caps) in **Settings > Bindings** and redeploy (tables are created automatically) |
 | `"AI is not available right now"` | The Workers AI binding named `AI` is missing or the model name in the code is not in the Cloudflare model list | Go to Cloudflare dashboard > **Workers & Pages** > your project > **Settings > Bindings > Add > Workers AI**, set variable name to `AI` (capital letters), check `TRANSLATE_MODEL` / `CHAT_MODEL` in `functions/api/[[route]].js`, and redeploy |
 | **Admin** button does not appear | Your Telegram ID is missing from `ADMIN_IDS` (and `OWNER_IDS`), or has spaces/typos | Confirm your numeric ID with `@userinfobot`, add it to `ADMIN_IDS`, and redeploy |
 | Video upload is rejected | Video is longer than 10 seconds, larger than 30 MB, or not MP4/MOV/WEBM | Trim the video to 10 seconds or less and keep file size under 30 MB |
@@ -277,7 +261,7 @@ Non-owner admins can view the **Settings** screen, but only an Owner can save ch
 1. Open your repository on GitHub and edit the file you want to update (for example `public/index.html` or `functions/api/[[route]].js`), or push new commits from your computer.
 2. Commit the changes to your production branch (usually `main`).
 3. Cloudflare Pages detects the GitHub commit and automatically builds and deploys the new version within about a minute.
-4. If an update adds new database tables or columns, run the new SQL migration statements in the Cloudflare D1 **Console** as well.
+4. Any new tables or columns added in the backend are applied automatically on the first request after deploy.
 
 ## FAQ
 

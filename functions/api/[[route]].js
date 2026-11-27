@@ -741,6 +741,68 @@ const CATEGORIES = {
 const VALID_REGION_SET = new Set(REGIONS.map((r) => r.v));
 const encoder = new TextEncoder();
 
+const SCHEMA_TABLE_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, owner_id TEXT NOT NULL, tg TEXT, cat TEXT NOT NULL, title TEXT NOT NULL, price INTEGER NOT NULL, negotiable INTEGER DEFAULT 0, region TEXT, city TEXT, place TEXT, descr TEXT, attrs TEXT DEFAULT '{}', media TEXT DEFAULT '[]', status TEXT NOT NULL DEFAULT 'pending', reject_reason TEXT, reports INTEGER DEFAULT 0, featured INTEGER DEFAULT 0, plan TEXT, fee INTEGER DEFAULT 0, pay_method TEXT, pay_ref TEXT, receipt TEXT, verified INTEGER DEFAULT 0, created_at INTEGER, approved_at INTEGER, text_lang TEXT DEFAULT 'en')`,
+  `CREATE TABLE IF NOT EXISTS reports (item_id INTEGER, user_id TEXT, PRIMARY KEY (item_id, user_id))`,
+  `CREATE TABLE IF NOT EXISTS banned (user_id TEXT PRIMARY KEY, username TEXT, reason TEXT, banned_at INTEGER, banned_by TEXT)`,
+  `CREATE TABLE IF NOT EXISTS ai_usage (user_id TEXT, day TEXT, n INTEGER, PRIMARY KEY (user_id, day))`,
+  `CREATE TABLE IF NOT EXISTS upload_usage (user_id TEXT, day TEXT, n INTEGER, PRIMARY KEY (user_id, day))`,
+  `CREATE TABLE IF NOT EXISTS users (user_id TEXT PRIMARY KEY, username TEXT, first_name TEXT, lang TEXT DEFAULT 'en', can_dm INTEGER DEFAULT 0, first_seen INTEGER, last_seen INTEGER)`,
+  `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_by TEXT, updated_at INTEGER)`,
+  `CREATE TABLE IF NOT EXISTS audit_log (id INTEGER PRIMARY KEY AUTOINCREMENT, admin_id TEXT NOT NULL, admin_username TEXT, action TEXT NOT NULL, target_type TEXT, target_id TEXT, details TEXT, created_at INTEGER NOT NULL)`
+];
+
+const SCHEMA_INDEX_STATEMENTS = [
+  `CREATE INDEX IF NOT EXISTS idx_items_status ON items(status)`,
+  `CREATE INDEX IF NOT EXISTS idx_items_region_city ON items(region, city)`,
+  `CREATE INDEX IF NOT EXISTS idx_items_created ON items(created_at)`,
+  `CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at)`
+];
+
+let schemaReady = false;
+let schemaPromise = null;
+
+async function ensureMissingColumns(db, tableName, columnsToEnsure) {
+  const { results } = await db.prepare(`PRAGMA table_info(${tableName})`).all();
+  const existing = new Set((results || []).map((col) => String(col.name || "").toLowerCase()));
+  for (const col of columnsToEnsure) {
+    if (!existing.has(col.name.toLowerCase())) {
+      try {
+        await db.prepare(`ALTER TABLE ${tableName} ADD COLUMN ${col.def}`).run();
+      } catch (e) {
+        const msg = String(e && e.message ? e.message : e).toLowerCase();
+        if (!msg.includes("duplicate column")) {
+          throw e;
+        }
+      }
+    }
+  }
+}
+
+async function ensureDatabaseSchema(db) {
+  if (schemaReady) return;
+  if (!schemaPromise) {
+    schemaPromise = (async () => {
+      await db.batch(SCHEMA_TABLE_STATEMENTS.map((sql) => db.prepare(sql)));
+      await ensureMissingColumns(db, "items", [
+        { name: "approved_at", def: "approved_at INTEGER" },
+        { name: "text_lang", def: "text_lang TEXT DEFAULT 'en'" }
+      ]);
+      await ensureMissingColumns(db, "banned", [
+        { name: "reason", def: "reason TEXT" },
+        { name: "banned_at", def: "banned_at INTEGER" },
+        { name: "banned_by", def: "banned_by TEXT" }
+      ]);
+      await db.batch(SCHEMA_INDEX_STATEMENTS.map((sql) => db.prepare(sql)));
+      schemaReady = true;
+    })().catch((e) => {
+      schemaPromise = null;
+      throw e;
+    });
+  }
+  await schemaPromise;
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -1943,7 +2005,13 @@ export async function onRequest(context) {
     return err("Unauthorized. Please open MILKII APP from Telegram.", 401);
   }
 
+  if (!env || !env.DB) {
+    return err("Database binding DB is not configured.", 500);
+  }
+
   try {
+    await ensureDatabaseSchema(env.DB);
+
     // GET /api/config
     if (method === "GET" && route.length === 1 && route[0] === "config") {
       const settings = await getSettings(env.DB);
